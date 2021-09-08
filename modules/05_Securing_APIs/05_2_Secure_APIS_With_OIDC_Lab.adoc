@@ -1,0 +1,426 @@
+:noaudio:
+:scrollbar:
+:toc2:
+:linkattrs:
+:data-uri:
+
+== Secure APIs With OpenID Connect lab
+
+The APIs you deployed and configured until now on the 3scale API Management platform were secured with an API Key (user key), or with a combination of an App ID and an App Key.
+
+In this lab you secure an API with Open ID Connect (OIDC), using Red Hat Single Sign-On (RH-SSO) as identity provider.
+
+.Goals
+* Synchronize between 3scale and RH-SSO
+* Secure APIs using OpenID Connect and _Authorization Code_ flow protocol
+
+:numbered:
+
+== Introduction
+
+=== Environment Variables
+
+The instructions in this lab refer to several environment variables. As part of the instructions, you need to replace these environment variables with their value. This can be done automatically by setting the environment variables in the current shell. Beware that every time you close or change the terminal window the environment variables need to be set again.
+
+----
+$ export AMP_SSO_REALM=<name of the realm in RH-SSO>
+$ export RHSSO_URL=<URL of the RH-SSO server>
+----
+
+Assuming your workstation is a Linux workstation and you use the _Bash_ shell, the environment variables can be added to the `.bashrc` shell initialization file and make available in all your terminal windows:
+
+----
+$ echo 'export AMP_SSO_REALM=<provided by your instructor>         # Name of the realm on RHSSO to secure APIs'  >> ~/.bashrc
+$ echo 'export RHSSO_URL=<provided by your instructor>           # URL of the Red Hat SSO server'   >> ~/.bashrc
+$ source ~/.bashrc
+----
+
+The values to be used for these environment variables will be communicated to you by your instructor.
+
+=== Realm User Registration
+
+This section of the lab assumes your instructor has already provisioned an SSO realm for you.
+
+The purpose of this section is to provide details regarding how to register as an administrative user of that previously provisioned SSO realm.
+
+Your realm is configured such that the first user that registers becomes the realm administrator.
+
+. Obtain the URL to the console of your target realm:
++
+-----
+$ echo -en "\nhttps://$RHSSO_URL/auth/admin/$AMP_SSO_REALM/console\n\n"
+-----
+
+. Open a web browser and navigate to the URL. Expect to see the RH-SSO login screen:
++
+image::images/rhsso_realm_login.png[]
+
+. Click the *Register* link to register as a new user.
+
+. Fill in all fields of the registration form.  The email address has to be a valid, but not necessarily a genuine email address.
+. Click *Register*.
+. You are redirected to the realm overview page. The newly registered realm user has administrative access to all settings of the realm.
++
+image::images/rhsso_realm_overview_page.png[]
+
+. In a terminal window of your local machine, set environment variables specific to this new realm user:
++
+-----
+$ export RHSSO_REALM_USERID=<change me>
+$ export RHSSO_REALM_PASSWD=<change me>
+-----
++
+Or add them to the `~/.bashrc` file:
++
+----
+$ echo 'export RHSSO_REALM_USERID=<change me>       # Admin User ID of the SSO realm' >> ~/.bashrc
+$ echo 'export RHSSO_REALM_PASSWD=<change me>       # Password of the admin user of the SSO realm' >> ~/.bashrc
+$ source ~/.bashrc
+----
++
+You will reference these environment variables in later in this lab.
+
+== 3scale and Red Hat Single Sign-On Integration
+
+=== Overview
+
+Every OIDC secured _application_ in 3scale needs a corresponding SSO client in RH-SSO.
+The details between the API managed _application_ should match the details of the corresponding SSO _client_.
+
+Subsequently, it is important to automate the synchronization between 3scale and RH-SSO.
+
+The _zync_ component in 3scale is the component responsible for this synchronization.
+Its purpose is to synchronize API managed _applications_ to external systems such as RH-SSO.
+It does so in an automated manner by pushing updates to external systems every time a state change occurs with an API managed _application_.
+
+In this section, you create a SSO client in the realm of your RH-SSO server that will be leveraged by the _zync_ component of the 3scale API management platform.
+Zync will use the new SSO client to synchronize between OIDC secured _applications_ and their corresponding SSO _clients_ in RH-SSO.
+
+The name of this new SSO client will be called:  _zync-sso_.
+The _zync-sso_ client will be configured to utilize the OIDC _client credentials_ flow.
+Via the _zync-sso_ client, the zync component will retrieve an access token that then allows for the creation and update of new SSO clients through the RH-SSO API.
+
+[NOTE]
+====
+Within OIDC and OAuth, the Client Credential Flow is used for server-to-server scenarios. In this scenario, the client application (in our case the 3scale zync component) is a confidential client that’s acting on its own, not on behalf of the user. It’s more of a service account type of scenario. It’s a back channel flow to obtain an access token using the client’s credentials.
+A good explanation of the different OIDC flows can be found here: https://developer.okta.com/blog/2017/06/21/what-the-heck-is-oauth
+====
+
+=== Create _zync_sso_ client
+
+. In a browser window, navigate to the console of your realm on the RH-SSO server.
+. On the right menu, click *Clients* to open the realm clients overview page,
+. Click *Create* to create a new realm client.
++
+image::images/rhsso_realm_new_client.png[]
+. In the _Add Client_ page, enter the following values:
+* *Client ID*: `zync-sso`
+* *Client Protocol*: `openid-connect`
+* *Root URL*: leave blank
+. Click *Save* to create the realm client.
+. You are redirected to the client _Settings_ page.
++
+image::images/rhsso_realm_client_settings.png[]
+. Make the following changes to the client settings:
+* Set *Access Type* to `Confidential`.
+* Set *Standard Flow Enabled* to `OFF`.
+* Set *Direct Access Grants Enabled* to `OFF`.
+* Set *Service Accounts Enabled* to `ON`.
++
+image::images/rhsso_realm_client_settings_client_credentials.png[]
+. Scroll down and click *Save* to save the client configuration.
+. Navigate to the *Service Account Roles* tab of the client settings.
+. In the *Client Roles* dropdown, type `realm-management`.
+. Ensure that the `manage-clients` role is listed as one of the *Assigned Roles*.
++
+image::images/rhsso_realm_client_service_account_roles.png[]
+. Take note of the _Client ID_ - which is `zync-sso` unless you changed the value.
+. Take note of the _Client Secret_. You can find the value of the Client Secret on the *Credentials* page of the client.
++
+image::images/rhsso_realm_client_credentials.png[]
+. Set environment variables for the Client ID and Client Secret:
++
+----
+$ export ZYNC_SSO_CLIENT_ID=zync-sso
+$ export ZYNC_SSO_CLIENT_SECRET=<zync_sso client secret>
+----
++
+Or add them to the `~/.bashrc` file:
++
+----
+$ echo 'export ZYNC_SSO_CLIENT_ID=zync-sso      # Client ID for the zync client on RH-SSO' >> ~/.bashrc
+$ echo 'export ZYNC_SSO_CLIENT_SECRET=<zync_sso client secret>       # Client secret of the zync client on RH-SSO' >> ~/.bashrc
+$ source ~/.bashrc
+----
+
+== Create an OIDC Secured API
+
+=== Create API and Configure to Use OIDC
+
+In this section of the lab you configure an API product on 3scale protected with OpenID Connect.
+
+The backend for this new API is the _Products service_ which you leveraged in previous labs as well.
+
+. In a browser window, navigate to your tenant's 3scale Admin Portal.
+. Navigate to *Dashboard*, select the *Products* tab and click *New Product*.
+. On the _New Product_ page:
+* Select *define manually*
+* *Name*: `Products API OIDC`
+* *System Name*: `products_api_oidc`
+. Select *Create Product* to create the API.
+. Create an application plan for the new API:
+* *Name*: `Products OIDC Basic Plan`
+* *System Name*: `products_oidc/basic`
+. Publish the application plan.
+. Add a backend to the API. Select the `Products Service Backend` backend, and set the path to `/`.
+. The default mapping rules allow all `GET` operations, which is sufficient for this lab.
+. On the *Settings* page of the API:
+* Select `APIcast self-managed`.
+* Set the *Staging Public Base URL* to `https://products-api-oidc-${OCP_USER}-staging.${OCP_WILDCARD_DOMAIN}`.
+* Set the *Production Public Base URL* to `https://products-api-oidc-${OCP_USER}.${OCP_WILDCARD_DOMAIN}`.
+. In the *Authentication* section, select `OpenID Connect`.
++
+image::images/amp_admin_portal_product_settings_authentication.png[]
+. Scroll down and fill in the details for the authentication settings:
+* *OpenID Connect Issuer Type*: `Red Hat Single Sign-On`
+* Set the value of *OpenID Connect Issuer* to the URL of your realm on RH-SSO, to which you add the _zync_sso_ client ID and secret for authentication. +
+You can obtain the URL from the output of the following command:
++
+-----
+$ echo -en "\n\nhttps://$ZYNC_SSO_CLIENT_ID:$ZYNC_SSO_CLIENT_SECRET@$RHSSO_URL/auth/realms/$AMP_SSO_REALM\n\n"
+-----
++
+[NOTE]
+=====
+This URL serves the following purposes:
+
+* Provides zync with the URL to add or update SSO clients in RH-SSO.
+* Provides APIcast with the URL to RH-SSO to retrieve the public key of the RH-SSO realm in order to verify the JWT token.
+=====
+* In the *OIDC AUTHORIZATION FLOW* section, ensure that the _Authorization Code Flow_ checkbox is checked.
++
+image::images/amp_admin_portal_product_settings_authentication_settings.png[]
+* Scroll down and change *Credentials Location* to _As HTTP Headers_.
++
+image::images/amp_admin_portal_product_settings_authentication_jwt.png[]
+. Click *Update Product* to update the settings.
+
+. Create the OpenShift routes to the staging and production APIcast gateways. +
+Using the `oc` CLI tool:
++
+----
+$ oc create route edge products-oidc-staging-route  --service=apicast-stage --hostname=products-api-oidc-${OCP_USER}-staging.${OCP_WILDCARD_DOMAIN} -n ${OCP_USER}-3scale-gw
+$ oc create route edge products-oidc-production-route  --service=apicast-prod --hostname=products-api-oidc-${OCP_USER}.${OCP_WILDCARD_DOMAIN} -n ${OCP_USER}-3scale-gw
+----
+
+=== Create Application
+
+In this section of the lab you create an application for the _Products API OIDC_ API product.
+
+. In a browser window, navigate to your tenant's 3scale Admin Portal.
+. Navigate to *Audience -> Accounts -> Listing*, and click *Create* to create a new account.
+. On the _Create New Account Page_, enter the following values:
+* *Username*: `test-oidc`
+* *Email*: a valid email address
+* *Password*: an easy to remember password
+* *Organization/Group Name*: `TestOIDC`
+. Click *Create* to create the user and account.
+. Delete the applications for the new account which were created by default.
+. Create a new _Application_ for the TestOIDC account.
+* *Application Plan*: `Products OIDC Basic Plan`
+* *Name*: `TestOIDC Products App`
+. On the overview page for the application, click edit in the _API Credentials_ section.
++
+image::images/amp_admin_portal_application_api_credentials.png[]
+. Set the redirect URL to `https://www.getpostman.com/oauth2/callback`.
++
+image::images/amp_admin_portal_application_api_credentials_edit_url.png[]
++
+* This redirect URL will become useful later in this lab when you test using the _Authorization Code_ OAuth2 flow.
+* Notice that the API Credentials for this application do no consist of a user key, but rather a Client ID and a Client Secret.
+
+. In a terminal window of your local machine, set environment variables referring to the Client ID and Secret of the application:
++
+-----
+$ export PRODUCTS_OIDC_APP_CLIENT_ID=<change me>
+$ export PRODUCTS_OIDC_APP_CLIENT_SECRET=<change me>
+-----
++
+You will reference these environment variables in later in this lab. 
+
+=== Verify Application Client in RH-SSO
+
+As a result of creating the application, the 3scale zync component has created a new realm client for your realm in the RH-SSO server.
+
+. Log in to the realm console of your realm in RH-SSO, and navigate to the *Clients* section.
+. Notice that a new client has been created with a client ID corresponding to the client ID of the _TestOIDC Products App_ application in 3scale.
++
+image::images/rhsso_realm_client_zync_created.png[]
+. Click the *Edit* button for the new client.
+* Notice that the client name corresponds to the name of the application in 3scale.
+. Set *Direct Grant Enabled* to `ON`.
++
+image::images/rhsso_realm_client_settings_direct_access_grant.png[]
++
+This will allow to test the OIDC setup using a token obtained from the realm with a username and password.
+. Click *Save* to save the change.
+
+== Test the OIDC Secured API
+
+In this section of the lab you test the OIDC secured Products API using the OIDC _Resource Owner Password Credentials_ and the _Authorization Code_ flows.
+
+=== Promote to Staging and Production APIcast
+
+. In the 3scale Admin Portal, navigate to *Product: Products API OIDC -> Integration -> Configuration*.
+. Promote the API to the staging and production APIcast.
+
+=== Test the API with Resource Owner Password Credentials flow.
+
+. Obtain a token from the RH-SSO client for the _Products API OIDC_ application. Use the username and the password you used to register with the your RH-SSO realm.
++
+----
+TKN=$(curl -X POST \
+ -H "Content-Type: application/x-www-form-urlencoded" \
+ -d "username=$RHSSO_REALM_USERID" \
+ -d "password=$RHSSO_REALM_PASSWD" \
+ -d "grant_type=password" \
+ -d "client_id=$PRODUCTS_OIDC_APP_CLIENT_ID" \
+ -d "client_secret=$PRODUCTS_OIDC_APP_CLIENT_SECRET" \
+ https://$RHSSO_URL/auth/realms/$AMP_SSO_REALM/protocol/openid-connect/token \
+| sed 's/.*access_token":"//g' | sed 's/".*//g')
+----
++
+Verify the result of the command. Expect something like:
++
+----
+$ echo $TKN
+eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJZdk1xOTNMWE1hSWtHMmZKSldTUjJxSmRYd0NkRE9Xck9Ncm9XUHBWZFl3In0.eyJleHAiOjE2MTE4NTQ5NjQsImlhdCI6MTYxMTg1NDY2NCwianRpIjoiMjBjYmQwMjktNDg1OC00ZTQ0LTk5M2YtYzczODNhZmJlNjU2IiwiaXNzIjoiaHR0cHM6Ly9yaHNzby1yaHNzby5hcHBzLmNsdXN0ZXItZTE4OS5lMTg5LnNhbmRib3gxMjA4Lm9wZW50bGMuY29tL2F1dGgvcmVhbG1zL2FtcC1yZWFsbS11c2VyNTAiLCJhdWQiOlsicmVhbG0tbWFuYWdlbWVudCIsImFjY291bnQiXSwic3ViIjoiMDdjZDhhMzEtOWQ4ZS00YWMxLWFhOTAtYmNmODA2NWQ3ODUyIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiMjJjMmFkZGIiLCJzZXNzaW9uX3N0YXRlIjoiZmFjYTk1OTQtNjRjNy00NWJjLTkwNzYtYTg3YjM3OGU4MmM2IiwiYWNyIjoiMSIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsicmVhbG0tbWFuYWdlbWVudCI6eyJyb2xlcyI6WyJ2aWV3LWlkZW50aXR5LXByb3ZpZGVycyIsInZpZXctcmVhbG0iLCJtYW5hZ2UtaWRlbnRpdHktcHJvdmlkZXJzIiwiaW1wZXJzb25hdGlvbiIsImNyZWF0ZS1jbGllbnQiLCJtYW5hZ2UtdXNlcnMiLCJxdWVyeS1yZWFsbXMiLCJ2aWV3LWF1dGhvcml6YXRpb24iLCJxdWVyeS1jbGllbnRzIiwicXVlcnktdXNlcnMiLCJtYW5hZ2UtZXZlbnRzIiwibWFuYWdlLXJlYWxtIiwidmlldy1ldmVudHMiLCJ2aWV3LXVzZXJzIiwidmlldy1jbGllbnRzIiwibWFuYWdlLWF1dGhvcml6YXRpb24iLCJtYW5hZ2UtY2xpZW50cyIsInF1ZXJ5LWdyb3VwcyJdfSwiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJwcm9maWxlIGVtYWlsIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiQmVybmFyZCBUaXNvbiIsInByZWZlcnJlZF91c2VybmFtZSI6ImJ0aXNvbiIsImdpdmVuX25hbWUiOiJCZXJuYXJkIiwiZmFtaWx5X25hbWUiOiJUaXNvbiIsImVtYWlsIjoiYnRpc29uK3Nzb0ByZWRoYXQuY29tIn0.BDo2tWXypdPrhP8Vlc8BajhbIQMefyFtvSDbFnlwwbfgePcIpjAJNN599jtOHJg3P4JBN2ljaDfi92c0WwaqM1XYXc5qGJ5IApPpGRQ3ahCHH25ZR5QUg2GmcW4ifBcUI0kHoe9Sd3Cr1i7ym5BqPeTIpziOAvMTC4C5nDdgL_DEpMOYnO8duzcOOVFIS_wdrA-9duRaMgIS5MOvnh2sFpfMIdLuuP5haOUnsrt8GDm2HekMRZmnmwiiyO7i-kypMFpygvAOg8CkUpBwAC-pChd9CAmv0mBCkfJbflrlk8urJkkITOMvznpmkrnjxh-a7RYedt3CGkLI88ZIewUmLw
+----
+. Verify the token contents:
+* In a browser window, navigate to https://jwt.io.
+* Paste the contents of the token in the right pane of the _Debugger_ on the jwt.io homepage.
++
+image::images/jwt_io.png[]
+* Notice the contents of the `azp` field in the token, which corresponds to the application ID in 3scale. +
+APIcast uses the contents of this field to identify the target application in order to apply the policies and limits defined for the application.
+. A token is only valid for 5 minutes. At any time you can obtain a new token using the _curl_ command above.
+. Test the API using the JWT token to authenticate. +
+Using _curl_, issue the following command:
++
+----
+$ curl -v -X GET -H "Accept: application/json" -H "Authorization: Bearer $TKN" https://products-api-oidc-${OCP_USER}.${OCP_WILDCARD_DOMAIN}/api/products
+----
++
+.Expected Output (truncated)
+----
+*   Trying 34.240.138.165:443...
+* Connected to products-api-oidc-user50.apps.cluster-e189.e189.sandbox1208.opentlc.com (34.240.138.165) port 443 (#0)
+[...]
+> GET /api/products HTTP/1.1
+> Host: products-api-oidc-user50.apps.cluster-e189.e189.sandbox1208.opentlc.com
+> User-Agent: curl/7.71.1
+> Accept: application/json
+> Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJZdk1xOTNMWE1hSWtHMmZKSldTUjJxSmRYd0NkRE9Xck9Ncm9XUHBWZFl3In0.eyJleHAiOjE2MTE4NjQ2NTYsImlhdCI6MTYxMTg2NDM1NiwianRpIjoiM2FlYTJmZmUtZGFhNy00YTQ3LTk5NDktZmM1MmU1ZDVhZmFhIiwiaXNzIjoiaHR0cHM6Ly9yaHNzby1yaHNzby5hcHBzLmNsdXN0ZXItZTE4OS5lMTg5LnNhbmRib3gxMjA4Lm9wZW50bGMuY29tL2F1dGgvcmVhbG1zL2FtcC1yZWFsbS11c2VyNTAiLCJhdWQiOlsicmVhbG0tbWFuYWdlbWVudCIsImFjY291bnQiXSwic3ViIjoiMDdjZDhhMzEtOWQ4ZS00YWMxLWFhOTAtYmNmODA2NWQ3ODUyIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiMjJjMmFkZGIiLCJzZXNzaW9uX3N0YXRlIjoiYmE1OWI1OTAtZjBhNi00NDEzLWFlNDktOWQ3ZGI4ZWE1Mjc5IiwiYWNyIjoiMSIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsicmVhbG0tbWFuYWdlbWVudCI6eyJyb2xlcyI6WyJ2aWV3LWlkZW50aXR5LXByb3ZpZGVycyIsInZpZXctcmVhbG0iLCJtYW5hZ2UtaWRlbnRpdHktcHJvdmlkZXJzIiwiaW1wZXJzb25hdGlvbiIsImNyZWF0ZS1jbGllbnQiLCJtYW5hZ2UtdXNlcnMiLCJxdWVyeS1yZWFsbXMiLCJ2aWV3LWF1dGhvcml6YXRpb24iLCJxdWVyeS1jbGllbnRzIiwicXVlcnktdXNlcnMiLCJtYW5hZ2UtZXZlbnRzIiwibWFuYWdlLXJlYWxtIiwidmlldy1ldmVudHMiLCJ2aWV3LXVzZXJzIiwidmlldy1jbGllbnRzIiwibWFuYWdlLWF1dGhvcml6YXRpb24iLCJtYW5hZ2UtY2xpZW50cyIsInF1ZXJ5LWdyb3VwcyJdfSwiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJwcm9maWxlIGVtYWlsIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiQmVybmFyZCBUaXNvbiIsInByZWZlcnJlZF91c2VybmFtZSI6ImJ0aXNvbiIsImdpdmVuX25hbWUiOiJCZXJuYXJkIiwiZmFtaWx5X25hbWUiOiJUaXNvbiIsImVtYWlsIjoiYnRpc29uK3Nzb0ByZWRoYXQuY29tIn0.G7p3f4z3a14lSV_EstlRCffwUNbFDippU99ePhFNZ6wK9XvbczCTpm8xDDDvx0zHuXScYYjAyP_7f5zKzYIuLfT6FzzoCDuoqkJaVEgm8_M68pt6LnOZgFkskUj3RhnRfB5ZOXg8oNKE4uj4haCCM_f0R9mqum0utIGzE4IgL2yGgYTDVFJXPrGnoExaOQg1_fpuuDOblOwoliV97Ls5LYIGbW7rVO5CBQheJJZhfm5RrpeD9HEvFQZG2KIRmP4ivBFQckfZR-8t14YsGvH5_dtJuvlE_-3xVnB8lEUX3l4klAXvtPdBh3vceUXqRx3H9dIPLv7SwNSlFvcateVkwQ
+> 
+* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
+* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
+* old SSL session ID is stale, removing
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 200 OK
+< server: openresty
+< date: Thu, 28 Jan 2021 20:06:19 GMT
+< content-type: application/json
+< content-length: 1038
+< set-cookie: 8267424040862638492c1a01e123f614=841a70e8be5653acbea352c86e1166fe; path=/; HttpOnly; Secure; SameSite=None
+< cache-control: private
+< 
+[{"id":1,"name":"Ninja Blender","price":320.00},{"id":11,"name":"Ninja Blender Pro","price":515.00},{"id":21,"name":"Kitchenhelp Juicer","price":149.99},{"id":31,"name":"ArtCuisine Toaster","price":79.99},{"id":41,"name":"White and Decor Toaster Oven","price":49.99},{"id":51,"name":"Mexpresso Maker","price":199.99},{"id":61,"name":"Mini Fridge","price":229.99},{"id":71,"name":"Slow-Cooker Pot","price":44.99},{"id":81,"name":"SungSamn 4-Door Refrigerator","price":2199.99},{"id":91,"name":"Hanilton 12 Cup Food Processor","price":49.99},{"id":92,"name":"Samsung LED TV","price":499.95},{"id":93,"name":"my product","price":62.95},{"id":95,"name":"my other product","price":62.95},{"id":96,"name":"fantastic product","price":62.95},{"id":97,"name":"fantastic product","price":62.95},{"id":98,"name":"fantastic product","price":62.95},{"id":102,"name":"Samsung LED TV","price":299.95},{"id":103,"name":"Panasoic LED TV","price":399.95},{"id":104,"name":"Panasoic Plasma TV","price":199.95},{"id":105,"name":"JVC OLED TV","price":199.95}]
+----
+* Expect a HTTP `200 OK` response code.
+* If the token is expired or otherwise invalid (e.g. tampered with), expect an HTTP error return code `403 Forbidden`. 
+
+=== Test the API with Authorization Code flow.
+
+In the previous section of this lab, you used the _Resource Owner Password Credentials_ flow of the OAuth2 specification to obtain an access token.
+That flow was helpful as a simple mechanism to test initial SSO configurations between your API gateway, the API Manager, Red Hat SSO and your backend service.
+
+In this exercise, you use the more real-world OAuth2 flow called _Authorization Code_ to obtain your SSO access token.
+
+==== Install and Configure Postman
+
+. Install Postman on your local workstation if you don't have it installed yet. Navigate to `https://www.postman.com/downloads/` and download the version matching your OS. At the moment of writing the latest version is 7.27.1. Untar or unzip the downloaded archive, and add the `Postman` binary to your PATH. Verify that the installation was successful. The response of the `which` command should point to the Postman executable binary.
++
+----
+$ which Postman
+----
+
+. Open the Postman application. If this is the first time you used Postman, expect to be greeted with a sign-up page. Feel free to skip this stage and go directly to the application.
++
+image::images/postman_signup_page.png[]
+
+. Expect to see the landing page of the Postman application:
++
+image::images/postman_empty_home_page.png[]
+
+. Click *Create a request*. 
+
+. Enter the URL to the production APIcast of the _Products API OIDC_ application in the *Enter request URL* text box. +
++
+The URL can be obtained from the following command:
++
+----
+$ echo -en "\nhttps://products-api-oidc-${OCP_USER}.${OCP_WILDCARD_DOMAIN}/api/products\n\n"
+----
++
+image::images/postman_request_url.png[]
+
+. Click *Send*
+. Expect a `403 Forbidden` return code, and a response `Authentication parameters missing`.
++
+image::images/postman_response_forbidden.png[]
+. Configure Postman to obtain an access token from the RH-SSO server.
+.. Click the *Authorization* tab.
+.. From the *Type* field, select _OAuth 2.0_.
+.. Enter the following values into the *Configure New Token* dialog box:
+* *Token Name*: `Products Access Token`
+* *Grant Type*: `Authorization Code`
+* *Callback URL*: `https://www.getpostman.com/oauth2/callback`
+
+* *Auth URL*: Use the following command to get the URL:
++
+-----
+$ echo -en "\nhttps://$RHSSO_URL/auth/realms/$AMP_SSO_REALM/protocol/openid-connect/auth\n\n"
+-----
+
+* *Access Token URL*: Use the following command to get the URL:
++
+-----
+$ echo -en "\nhttps://$RHSSO_URL/auth/realms/$AMP_SSO_REALM/protocol/openid-connect/token\n\n"
+-----
+
+* *ClientID*: The value of `$PRODUCTS_OIDC_APP_CLIENT_ID`
+* *Client Secret*: The value of `$PRODUCTS_OIDC_APP_CLIENT_SECRET`
+* *Scope* : openid
+* *Client Authentication* : `Send as Basic Auth header`
++
+image::images/postman_configure_new_token.png[]
+
+. Click *Get New Access Token*.
+* A new dialog box appears that shows the login screen for your realm on the RH-SSO server
++
+image::images/postman_request_token_login.png[]
+
+. Enter the username and password of a realm user.  For now, you can just use the values of `$RHSSO_REALM_USERID` and `$RHSSO_REALM_PASSWD`. Click *Log in*.
+
+. A new pop-up appears that shows the details of the Access token that was obtained from the RH-SSO server.
++
+Click *Use Token*
++
+image::images/postman_manage_access_token.png[]
+
+. Back on the request page, click *Send*. +
+This time expect a successful response.
++
+image::images/postman_response_ok.png[]
+
+You have successfully secured your API using OpenID Connect.

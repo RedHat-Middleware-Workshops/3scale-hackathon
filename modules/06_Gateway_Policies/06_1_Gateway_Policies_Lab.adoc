@@ -1,0 +1,235 @@
+:noaudio:
+:scrollbar:
+:toc2:
+:linkattrs:
+:data-uri:
+
+== API Gateway Policies Lab
+
+In this lab you learn about API gateway policies.
+You study a couple of popular standard policies available out of the box with 3scale and learn about using them in a policy chain to manage the APIcast gateway's behavior.
+
+APIcast policies are units of functionality that modify how APIcast operates. Policies can be enabled, disabled, and configured to control how they modify APIcast. Use policies to add functionality that is not available in a default APIcast deployment. You can create your own policies, or use standard policies provided by Red Hat 3scale.
+
+.Reference
+* link:https://access.redhat.com/documentation/en-us/red_hat_3scale_api_management/2.9/html/administering_the_api_gateway/apicast_policies#standard-policies[API Gateway Standard Policies]
+
+:numbered:
+
+== Policy Chain for Logging
+
+In this section, you set up a policy to provide detailed access logs in the APIcast gateway for each request.
+This is a standard policy plug-in available in 3scale API Management that can be configured directly in the service configuration.
+
+=== Default APIcast logging
+
+Before enabling and configuring the _Logging_ policy, you can verify what the APIcast logs for each request.
+
+. In a terminal window, use the _curl_ utility to make a couple of requests to the `GET /api/products` endpoint of the Products API. Use the user key of the _Products Premium App_ application.
++
+----
+$ curl -X GET --header "Accept: application/json" "https://products-api-${OCP_USER}-staging.${OCP_WILDCARD_DOMAIN}:443/api/products?user_key=${PRODUCTS_API_TEST_ADMIN_USER_KEY}"
+----
++
+Note that you use the staging APIcast. Configuration changes on the staging APIcast take effect immediately - APIcast loads the configuration on demand for each incoming request. This in contrast to the production APIcast where the configuration is loaded at boot time, and refreshed periodically, approx every five minutes.
+
+. Use the _oc_ command line utility to find the name of your tenant's production APIcast pod.
++
+----
+$ APICAST_STAGE_POD=$(oc get pod -l deployment=apicast-stage -o jsonpath={.items[0].metadata.name} -n $OCP_USER-3scale-gw)
+----
+. Get the logs of the APIcast pod
++
+----
+$ oc logs $APICAST_STAGE_POD -n $OCP_USER-3scale-gw
+----
++
+.Sample Output
+----
+[29/Jan/2021:13:37:34 +0000] products-service.user50-business-services.svc:8080 10.128.2.16:51522 "GET /api/products?user_key=6bfb9902540e2f1cf5906f46e54309b7 HTTP/1.1" 200 1038 (0.700) 0
+[29/Jan/2021:13:37:35 +0000] products-service.user50-business-services.svc:8080 10.128.2.16:51628 "GET /api/products?user_key=6bfb9902540e2f1cf5906f46e54309b7 HTTP/1.1" 200 1038 (0.000) 0
+[29/Jan/2021:13:38:19 +0000] products-service.user50-business-services.svc:8080 10.128.2.16:52838 "GET /api/products?user_key=6bfb9902540e2f1cf5906f46e54309b7 HTTP/1.1" 200 1038 (0.100) 0
+[29/Jan/2021:13:38:20 +0000] products-service.user50-business-services.svc:8080 10.131.0.40:58124 "GET /api/products?user_key=6bfb9902540e2f1cf5906f46e54309b7 HTTP/1.1" 200 1038 (0.100) 0
+----
++
+The default access log uses the following format:
++
+---- 
+[{{time_local}}] {{host}}:{{server_port}} {{remote_addr}}:{{remote_port}} "{{request}}" {{status}} {{body_bytes_sent}} ({{request_time}}) {{post_action_impact}}
+----
++
+[NOTE]
+====
+As an alternative, the logs of the APIcast pods can also be viewed from the OpenShift web console.
+
+. In a browser window, enter the URL to the OpenShift web console - `https://console-openshift-console.${OCP_WILDCARD_DOMAIN}`.
+. Log in with your OpenShift username and password.
+. Select the _Administrator_ perspective, navigate to *Home -> Projects* and in the _Projects_ list click on the link to the `${OCP_USER}-3scale-gw` project.
++
+image::images/openshift_select_project.png[]
+. Navigate to *Workload -> Pods*.
+. Click on the staging APIcast pod. This is the pod whose name begins with `apicast-stage`.
++
+image::images/openshift_select_pod.png[]
+. On the page for the pod, select the *Log* tab to see the logs of the pod.
++
+image::images/openshift_pod_log.png[]
+====
+
+=== Disable Access Logging for a Product
+
+A first use case for the Logging policy is to disable access logging for an API.
+
+. In a browser window, navigate to your tenant's 3scale Admin Portal.
+. Navigate to *Product: Products API -> Integration -> Policies*.
++
+image::images/amp_admin_portal_policies.png[]
++
+Expect to see the _3scale APIcast_ policy. +
+The _3scale APIcast_ policy manages the functionality of APIcast. This policy should (almost) always be the last in the list.
+. Click *Add Policy*.
+. From the list of policies, select *Logging*.
++
+image::images/amp_admin_portal_add_policy.png[]
+. Click the positioning arrows on the right to move the _Logging_ policy above the _3scale APIcast_ policy in the policy chain:
++
+image::images/amp_admin_portal_policies_order.png[]
+
+. Click the *Logging* policy to expand it.
+. To disable access logging.
+* Make sure that the policy is *Enabled*
+* Explicitly check and uncheck the *enable_access_logs*:
++
+image::images/amp_admin_portal_logging_policy_disable.png[]
+
+. Click *Update Policy*.
+. Back on the _Policies_ page, click *Update Policy Chain*.
+. Navigate to *Integration -> Configuration* and promote the configuration tot the staging APIcast.
+. Make a couple of requests to the `GET /api/products` endpoint of the Products API on the staging APIcast.
+. Verify the logs of the staging APIcast pod. +
+No access log statements should be produced for requests to the Products API.
+
+=== Customize Access Log Format
+
+Using the Logging policy, the format of the access log can be customized. The policy also allows to log in JSON format.
+Conditions can be defined for when to log. This makes it possible for example to only log successful requests (with HTTP return code `200`).
+
+. Edit the _Logging_ policy you created previously.
+* Check *enable_access_logs*.
+* Paste the following string in the *Custom Logging Format* text box:
++
+----
+[{{time_local}}] {{host}}:{{server_port}} {{remote_addr}}:{{remote_port}} "{{request}}" {{status}} {{body_bytes_sent}} ({{request_time}}) {{post_action_impact}}
+----
++
+This is the format that corresponds to the default access log.
+. Click *Update Policy*, and *Update Policy Chain*.
+. Promote the configuration to the staging APIcast.
+. Make a couple of requests to the `GET /api/products` endpoint of the Products API on the staging APIcast.
+. Verify the logs of the staging APIcast pod. +
+Expect to see access log entries with the same format as the default access logs.
+. Edit the _Logging_ policy.
+* In the *Custom Logging Format* text box, replace `{{remote_addr}}:{{remote_port}}` with `{{req.headers.x-forwarded-for}}`.
+** `{{remote_addr}}:{{remote_port}}` resolves to the internal IP address of the OpenShift Ingress router, which is not very useful.
+** `{{req.headers.x-forwarded-for}}` is the value of the `x-forwarded-for` HTTP header. The value of the header is set by the OpenShift Ingress router to the originating IP address of the client.
+. Update the policy and the policy chain, and promote the configuration to the staging APIcast.
+. Make a couple of requests to the `GET /api/products` endpoint of the Products API on the staging APIcast.
+. Verify the logs of the staging APIcast pod. +
+Expect to see access log entries which contain the IP address of the caller:
++
+----
+[29/Jan/2021:16:45:39 +0000] products-service.user50-business-services.svc:8080 178.119.47.150 "GET /api/products?user_key=6bfb9902540e2f1cf5906f46e54309b7 HTTP/1.1" 200 1038 (0.191) 0.013
+[29/Jan/2021:16:45:40 +0000] products-service.user50-business-services.svc:8080 178.119.47.150 "GET /api/products?user_key=6bfb9902540e2f1cf5906f46e54309b7 HTTP/1.1" 200 1038 (0.160) 0.004
+[29/Jan/2021:16:45:41 +0000] products-service.user50-business-services.svc:8080 178.119.47.150 "GET /api/products?user_key=6bfb9902540e2f1cf5906f46e54309b7 HTTP/1.1" 200 1038 (0.150) 0.004
+----
+
+== Policy Chain for IP check
+
+In this section, you set up a policy to accept or deny a request based on the request's IP address.
+This is a standard policy plug-in available in 3scale API Management that can be configured directly in the service configuration.
+
+. In a browser window, navigate to your tenant's 3scale Admin Portal.
+. Navigate to *Product: Products API -> Integration -> Policies*.
+. Click *Add Policy*.
+. From the list of policies, select *IP Check*.
+. Click the positioning arrows on the right to move the _IP Check_ policy to the top of the policy chain.
+. Click *IP check* to expand the policy.
+* In the *CLIENT_IP_SOURCES* section, add *Get the IP from the X-Forwarded-For header* and move the entry to the top of the list.
+* Add `127.0.0.1` as a new IP address in the *IPS* list.
+* Make sure *check_type* is set as *Allow only the IPs included in the list*:
++
+image::images/amp_admin_portal_ipcheck_policy.png[]
+
+. Click *Update Policy*, and *Update Policy Chain*.
+. Promote the configuration to the staging APIcast.
+. Make a couple of requests to the `GET /api/products` endpoint of the Products API on the staging APIcast.
+. Expect a HTTP `403 Forbidden` return code, with error message `IP address not allowed`.
+. Go back to the _IP Check_ policy.
+. Add the public IP address of your workstation to the list of IPs. +
+You can find the public IP address in the access log of the staging APIcast pod.
+. Update the policy and the policy chain, and promote the configuration to the staging APIcast.
+. Make a couple of requests to the `GET /api/products` endpoint of the Products API on the staging APIcast.
+. Expect the calls to succeed.
+
+. When you are done with this lab, remove the _IP check_ policy so that it does not affect the remaining labs.
+
+== Custom Metrics Policy
+
+The Custom metrics policy adds the availability to add metrics after the response sent by the upstream API. The main use case for this policy is to add metrics based on response code status, headers, or different NGINX variables.
+
+The `GET /api/product/{productId}` endpoint returns an HTTP `404` code when the product with the give ID does not exist. With the `Custom Metrics` policy you can add a custom metrics to measure these 404's.
+
+. In a browser window, navigate to your tenant's 3scale Admin Portal.
+. Navigate to *Product: Products API -> Integration -> Methods & Metrics*.
+. In the _Metrics_ section, click *New metric* to create a custom metric.
++
+image::images/amp_admin_portal_new_metric.png[]
+. Create a new metric to capture 404 responses.
+* *Friendly name*: `Hits 404`
+* *System name*: `hits_404`
+* *Unit*: `hit`
+. Click *Create Metric* to create the metric.
++
+image::images/amp_admin_portal_metrics.png[]
+
+. Navigate to the *Policies* section.
+. Click *Add Policy*.
+. From the list of policies, select *Custom Metrics*.
+. Click the positioning arrows on the right to move the _Custom Metrics_ policy above the _3scale APIcast_ policy.
+. Click *Custom Metrics* to expand the policy.
+. In the policy configuration page, enter the following values:
+* Make sure the policy is enabled.
+* *Increment*: `1`
+* *Metric to increment*: `hits_404`
+* *op*: `==`.
+* *right*: `{{status}}` +
+This matches the HTTP response code returned by the backend.
+* *left_type*: select `Evaluate 'left' as plain text`
+* *left*: `404`
+* *right type*: select `Evaluate 'right' as liquid`
+* *Combine operation*: leave to `and`
+. Click *Update Policy*, and *Update Policy Chain*.
+. Promote the configuration to the staging APIcast.
+. Make a couple of requests to the `GET /api/product/{productId}` endpoint of the Products API on the staging APIcast. Make sure to chose a product ID which does not exist.
++
+----
+$ curl -v -X GET --header "Accept: application/json" "https://products-api-${OCP_USER}-staging.${OCP_WILDCARD_DOMAIN}:443/api/product/250?user_key=${PRODUCTS_API_TEST_ADMIN_USER_KEY}"
+----
++
+.Output (truncated)
+----
+*   Trying 34.240.138.165:443...
+* Connected to products-api-user50-staging.apps.cluster-e189.e189.sandbox1208.opentlc.com (34.240.138.165) port 443 (#0)
+[...]
+< HTTP/1.1 404 Not Found
+< server: openresty
+< date: Sat, 30 Jan 2021 14:45:38 GMT
+< content-length: 0
+< set-cookie: f834931a80a7552cfa2ec69e8192582f=9e302d1cf8c1ab5cd5b011d803d2c173; path=/; HttpOnly; Secure; SameSite=None
+< cache-control: private
+<
+----
+. Navigate to *Product: Products API -> Analytics -> Traffic*.
+. On the traffic graph, select `Hits 404`. Expect to see a number of hits.
++
+image::images/amp_admin_portal_traffic_hits_404.png[]
