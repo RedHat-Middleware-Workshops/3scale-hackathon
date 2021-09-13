@@ -9,12 +9,8 @@ Primarily, this is due to following issues:
 - 3scale Operator does not allow customization of template used, so the resources and limits cannot be changed. This interferes with the quotas in the OpenTLC and RHPDS OCP workshop instances.
 
 ## Installation
-### S3 Storage Bucket
-An S3 storage bucket is to be in the GPE AWS account.
-
-1. Login to AWS console.
-2. Create a S3 bucket in the same region where you are deploying OCP Workshop.
-3. Note the details.
+### Storage
+This Team will be using RWO storage.
 
 ### OCP Environment
 1. Order `OpenShift Workshop 4.8` on the [RHPDS catalog](https://rhpds.redhat.com/catalog/explorer).
