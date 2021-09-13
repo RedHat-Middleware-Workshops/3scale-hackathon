@@ -21,27 +21,20 @@ This Team will be using RWO storage.
 6. Once provisioned, `ssh` to the bastion using the SSH password provided in the email.
 7. sudo as `root` user:
 
-    ```bash
     # sudo -i
-    ```
 
 8. Create `3scale-amp` project.
     
-    ```bash
     # oc new-project 3scale-amp
-    ```
     
 9. Find the resource limits for this project:
 
-    ```bash
     # oc get limitranges
     NAME                              CREATED AT
     3scale-amp-core-resource-limits   2019-12-17T15:33:34Z
-    ```
     
-10. Edit the resource limit `3scale-amp-core-resource-limits` to change the resource limits as follows:
+10. Edit the resource limit `3scale-amp-core-resource-limits` to change the resource limits as follows. The limit for memory as changed here to 32 GB to ensure the `redis-* pod`s of 3scale are deployed. This is only the max limit and does not affect the requested resources.
     
-    ```yaml
     spec:
       limits:
       - default:
@@ -58,13 +51,9 @@ This Team will be using RWO storage.
           cpu: "2"
           memory: 32Gi
         type: Pod
-    ```
-
-    The limit for memory as changed here to 32 GB to ensure the redis-* pods of 3scale are deployed. This is only the max limit and does not affect the requested resources.
 
 11. Create a secret file `aws-auth.yml` for AWS access credentials:
 
-    ```yaml
     apiVersion: v1
     kind: Secret
     metadata:
@@ -73,17 +62,13 @@ This Team will be using RWO storage.
       AWS_ACCESS_KEY_ID: <<your access key>>
       AWS_SECRET_ACCESS_KEY: <<your secret>>
     type: Opaque
-    ```
     
 12. Add the secret to the `3scale-amp` namespace:
     
-    ```bash
     oc create -f aws-auth.yml
-    ```
     
 13. Create the API Manager specification `amp-s3.yml`:
     
-    ```yaml
     apiVersion: apps.3scale.net/v1alpha1
     kind: APIManager
     metadata:
@@ -98,11 +83,9 @@ This Team will be using RWO storage.
             awsBucket: << your s3 bucket >>
             awsCredentialsSecret:
               name: aws-auth
-    ```
 
 14. Create the `smtp.yml` configmap to configure SMTP access:
 
-    ```yaml
     kind: ConfigMap
     apiVersion: v1
     metadata:
@@ -119,21 +102,17 @@ This Team will be using RWO storage.
       password: '<< your password>>'
       port: '587'
       username: '<< your userid>>'
-    ```
 
 15. Add the configmap to `3scale-amp` namespace:
 
-    ```
     oc create -f smtp.yml
-    ```
 
 16. From the OpenShift admin console, install the `3scale-community-operator` from Operator Hub to the `3scale-amp` namespace.
 17. Choose `Version 2.10`
 18. Once Operator is installed and ready, get back to the terminal and add the `APIManager`:
 
-    ```
     oc create -f amp-s3.yml
-    ```
+
 19. Wait for 10 mins for all the 3scale pods to be ready.
 20. Login to the Master URL and the `3scale-admin` tenant.
 21. Verify that you can open the Developer Portal and the Content is loaded correctly.
