@@ -20,6 +20,7 @@
 For this course, you need to provision OpenShift 4.8 workshop environment from rhpds
 
 . Login to the https://rhpds.redhat.com and provision an environment as shown below
+
 image::images/rhpds_provision_steps.png[]
 
 === Access Red Hat OpenShift Web Console
