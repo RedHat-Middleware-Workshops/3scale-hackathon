@@ -59,3 +59,30 @@ image::images/create_objectbucketclaim_details.png[]
 
 - Storage class should be *openshift-storage.noobaa.io*
 - Use the default *noobaa-default-bucket-class*
+
+Upon creating the Object Bucket Claim, it should show details something like below. Capture the values that will be used to create a secret `aws-auth` in the next step
++
+image::images/nooba_objectbucketclaim_details.png[]
++
+=== Create aws-auth secret
+
+In 3scale project, go to workloads -> secrets -> Create -> From Yaml
+
+Replace access_key, secret_key, bukcet_name, endpoint with the values captured above
+---
+apiVersion: v1                                                       
+kind: Secret                                                         
+metadata:                                                            
+  name: aws-auth                                                     
+stringData:                                                          
+  AWS_ACCESS_KEY_ID: <<access_key>>
+  AWS_SECRET_ACCESS_KEY: <<secret_key>>
+  AWS_BUCKET: <<bucket_name>>
+  AWS_REGION: local-s3-bucket
+  AWS_HOSTNAME: <<endpoint>>
+  AWS_PROTOCOL: HTTPS
+  AWS_PATH_STYLE: 'true'
+type: Opaque
+---
+
+=== Install 3scale operator
