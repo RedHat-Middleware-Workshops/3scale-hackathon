@@ -70,7 +70,7 @@ In 3scale project, go to workloads -> secrets -> Create -> From Yaml
 
 Replace access_key, secret_key, bukcet_name, endpoint with the values captured above
 
----
+----
 apiVersion: v1                                                       
 kind: Secret                                                         
 metadata:                                                            
@@ -84,6 +84,6 @@ stringData:
   AWS_PROTOCOL: HTTPS
   AWS_PATH_STYLE: 'true'
 type: Opaque
----
+----
 
 === Install 3scale operator
