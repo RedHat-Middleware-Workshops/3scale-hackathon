@@ -25,19 +25,23 @@ image::images/rhpds_provision_steps.png[]
 
 It takes up to 75 minutes to provision a cluster in rhpds. You will receive an email with detailed instructions to access the cluster.
 
-=== Create nooba storage class
+== Create nooba storage class
 
-==== Install OpenShift Container Storage Operator
+=== Install OpenShift Container Storage (OCS) Operator
+. Login to the OpenShift console using the email received upon provisioning rhpds cluster
 . Go to Operators -> Operator Hub
-. Install OpenShift Container Storage operator as shown below
+. Install OpenShift Container Storage operator as shown below with default values
 
 image::images/ocs_operator.png[]
 
-. Create 
+. Upon successful installation of the ocs operator, it should create openshift-storage namespace. Go to the OCS operator just installed and create storage cluster as shown below
 
------
-Openshift Console: https://console-openshift-console.apps.cluster-0228.0228.sandbox1124.opentlc.com
------
+image::images/nooba_create_storagecluster.png[]
+
+image::images/nooba_create storagecluster_capacity.png[]
+
+In about 10 minutes storage class "openshift-storage.noobaa.io" will be available under Storage->Storageclasses
+
 
 . At the login prompt, use the `$OCP_USER` and `$OCP_PASSWD` values.
 . If this is the first time you access the console, the console opens in the *Developer* perspective, with a pop-up inviting you to take a tour of the perspective. This is not required for the remainder of this course, so feel free to click *Skip tour*.
