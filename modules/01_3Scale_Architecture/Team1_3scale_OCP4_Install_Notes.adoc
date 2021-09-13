@@ -54,23 +54,6 @@ This Team will be using RWO storage.
           cpu: "2"
           memory: 32Gi
         type: Pod
-    
-13. Create the API Manager specification `amp-s3.yml`:
-    
-    apiVersion: apps.3scale.net/v1alpha1
-    kind: APIManager
-    metadata:
-      name: example-apimanager
-    spec:
-      wildcardDomain: <<your wildcard domain>>
-      resourceRequirementsEnabled: false
-      system:
-        fileStorage:
-          amazonSimpleStorageService:
-            awsRegion: << your aws region>>
-            awsBucket: << your s3 bucket >>
-            awsCredentialsSecret:
-              name: aws-auth
 
 14. Create the `smtp.yml` configmap to configure SMTP access:
 
