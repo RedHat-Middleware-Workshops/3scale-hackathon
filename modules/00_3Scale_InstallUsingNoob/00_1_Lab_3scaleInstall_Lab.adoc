@@ -68,7 +68,7 @@ image::images/nooba_objectbucketclaim_details.png[]
 
 In 3scale project, go to workloads -> secrets -> Create -> From Yaml
 
-Replace access_key, secret_key, bukcet_name, endpoint with the values captured above
+Replace access_key, secret_key, bukcet_name, endpoint with the values captured above. *AWS_REGION* value can be anything. `local-s3-bucket` is a made up value
 
 ----
 apiVersion: v1                                                       
@@ -87,3 +87,9 @@ type: Opaque
 ----
 
 === Install 3scale operator
+
+Install 3scale operator as shown in the screenshots below
+
+image::images/install_3scale_operator_1.png[]
+
+image::images/install_3scale_operator_2.png[]
