@@ -22,10 +22,15 @@ This Team will be using RWO storage.
 7. sudo as `root` user:
 
     ```bash
-    sudo -i
+    # sudo -i
     ```
 
 8. Create `3scale-amp` project.
+    
+    ```bash
+    # oc new-project 3scale-amp
+    ```
+    
 9. Find the resource limits for this project:
 
     ```bash
