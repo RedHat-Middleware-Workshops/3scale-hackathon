@@ -35,6 +35,9 @@ This Team will be using RWO storage.
     
 10. Edit the resource limit `3scale-amp-core-resource-limits` to change the resource limits as follows. The limit for memory as changed here to 32 GB to ensure the `redis-* pod`s of 3scale are deployed. This is only the max limit and does not affect the requested resources.
     
+    # oc edit limitranges
+    
+    [...]
     spec:
       limits:
       - default:
@@ -51,21 +54,6 @@ This Team will be using RWO storage.
           cpu: "2"
           memory: 32Gi
         type: Pod
-
-11. Create a secret file `aws-auth.yml` for AWS access credentials:
-
-    apiVersion: v1
-    kind: Secret
-    metadata:
-      name: aws-auth
-    stringData:
-      AWS_ACCESS_KEY_ID: <<your access key>>
-      AWS_SECRET_ACCESS_KEY: <<your secret>>
-    type: Opaque
-    
-12. Add the secret to the `3scale-amp` namespace:
-    
-    oc create -f aws-auth.yml
     
 13. Create the API Manager specification `amp-s3.yml`:
     
