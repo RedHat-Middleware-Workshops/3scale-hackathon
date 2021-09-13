@@ -36,9 +36,9 @@ Primarily, this is due to following issues:
 ### 2. Update machinesets
 1. In the web UI, navigate to `Compute` > `MachineSets`
 2. You should see 3 MachineSets, with one spinned down. Update the machine count of that MachineSet to 1.
- image:images/ms-1.png[machineset-1, height=300]
- image:images/ms-2.png[machineset-2, height=300]
- image:images/ms-3.png[machineset-3, height=300]
+ image:images/ms-1.png[machineset-1, height=350]
+ image:images/ms-2.png[machineset-2, height=250]
+ image:images/ms-3.png[machineset-3, height=200]
     
 ### 3. Install the 3scale operator
 1. From the OpenShift admin console, install the `3scale-community-operator` from Operator Hub to the `3scale-amp` namespace.
