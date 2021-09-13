@@ -9,7 +9,7 @@ Primarily, this is due to following issues:
 - 3scale Operator does not allow customization of template used, so the resources and limits cannot be changed. This interferes with the quotas in the OpenTLC and RHPDS OCP workshop instances.
 
 # Installation Overview
-1. Request RHPDS + create project
+1. link:{#1-request-rhpds--create-project}[Request RHPDS + create project]
 2. In web console, update machinesets to change 3rd set from 0 to 1 replica
 3. Install 3scale operator
 4. Install OpenShift Container Storage operator
@@ -51,10 +51,10 @@ This Team will be using RWO storage.
 2. Select update channel `stable-4.8`
 
 ### 5. Create ClusterStorage resource using all 3 machines
-1. After installing the operator, you should see this message:
+1. After installing the operator, you should see this message prompting you to create a `StorageCluster`:
 
-  image:images/stor-1.png[machineset-1, height=300]
-  
+    Installed operator - operand required
+    
 2. Set `Requested Capacity` to `0.5 TiB`
 3. Select all three nodes
 4. All other settings can keep their defaults. Hit Create.
