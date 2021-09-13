@@ -49,11 +49,17 @@ This Team will be using RWO storage.
 
 1. Install the OpenShift Container Storage operator to the `openshift-storage` namespace.
 2. Select update channel `stable-4.8`
-2. Create ClusterStorage resource using all 3 machines
 
-### 5. Create ClusterStorage resource
-`TODO`
-    
+### 5. Create ClusterStorage resource using all 3 machines
+1. After installing the operator, you should see this message:
+
+  image:images/stor-1.png[machineset-1, height=300]
+  
+2. Set `Requested Capacity` to `0.5 TiB`
+3. Select all three nodes
+4. All other settings can keep their defaults. Hit Create.
+5. Note: if you see a `404` message, reload your browser.
+
 ### 6. Create APIManager resource
 1. Find the resource limits for this project:
 
