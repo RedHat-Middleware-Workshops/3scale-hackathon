@@ -23,12 +23,20 @@ For this course, you need to provision OpenShift 4.8 workshop environment from r
 
 image::images/rhpds_provision_steps.png[]
 
-=== Access Red Hat OpenShift Web Console
+It takes up to 75 minutes to provision a cluster in rhpds. You will receive an email with detailed instructions to access the cluster.
 
-. Point your browser to the following URL:
-+
+=== Create nooba storage class
+
+==== Install OpenShift Container Storage Operator
+. Go to Operators -> Operator Hub
+. Install OpenShift Container Storage operator as shown below
+
+image::images/ocs_operator.png[]
+
+. Create 
+
 -----
-$ echo -en "\n\nhttps://console-openshift-console.$OCP_WILDCARD_DOMAIN\n\n"
+Openshift Console: https://console-openshift-console.apps.cluster-0228.0228.sandbox1124.opentlc.com
 -----
 
 . At the login prompt, use the `$OCP_USER` and `$OCP_PASSWD` values.
