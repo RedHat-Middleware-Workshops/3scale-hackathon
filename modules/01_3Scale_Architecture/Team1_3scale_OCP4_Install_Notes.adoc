@@ -1,0 +1,147 @@
+# Early Notes on Running 3scale 2.10 on OCP 4.8
+### Background
+The 3scale course has been delivered so far on OCP 3.x even though 3scale has been supported on OCP 4 since 3scale 2.5.
+
+Primarily, this is due to following issues:
+
+- The 3scale template is not supported to deploy AMP on OCP. Only the 3scale operator is supported. Hence, the existing 3scale Install Ansible Roles cannot be used for deploying to OCP 4.
+- On OCP 3.x, Gluster FS is available for providing RWX storage necessary for 3scale. On OCP 4.x, no RWx storage is available on OpenTLC or RHPDS.
+- 3scale Operator does not allow customization of template used, so the resources and limits cannot be changed. This interferes with the quotas in the OpenTLC and RHPDS OCP workshop instances.
+
+## Installation
+### S3 Storage Bucket
+An S3 storage bucket is to be in the GPE AWS account.
+
+1. Login to AWS console.
+2. Create a S3 bucket in the same region where you are deploying OCP Workshop.
+3. Note the details.
+
+### OCP Environment
+1. Order `OpenShift Workshop 4.8` on the [RHPDS catalog](https://rhpds.redhat.com/catalog/explorer).
+2. Confirm the warning, and leave all other default settings.
+3. Select `Training` as the Purpose.
+4. Submit - this can take about 30 minutes to finish, and you will get an email. 
+5. If the provision fails, simply repeat the previous steps.
+6. Once provisioned, `ssh` to the bastion using the SSH password provided in the email.
+7. sudo as `root` user:
+
+    ```bash
+    sudo -i
+    ```
+
+8. Create `3scale-amp` project.
+9. Find the resource limits for this project:
+
+    ```bash
+    # oc get limitranges
+    NAME                              CREATED AT
+    3scale-amp-core-resource-limits   2019-12-17T15:33:34Z
+    ```
+    
+10. Edit the resource limit `3scale-amp-core-resource-limits` to change the resource limits as follows:
+    
+    ```yaml
+    spec:
+      limits:
+      - default:
+          cpu: 500m
+          memory: 1536Mi
+        defaultRequest:
+          cpu: 50m
+          memory: 256Mi
+        max:
+          cpu: "2"
+          memory: 32Gi
+        type: Container
+      - max:
+          cpu: "2"
+          memory: 32Gi
+        type: Pod
+    ```
+
+    The limit for memory as changed here to 32 GB to ensure the redis-* pods of 3scale are deployed. This is only the max limit and does not affect the requested resources.
+
+11. Create a secret file `aws-auth.yml` for AWS access credentials:
+
+    ```yaml
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      name: aws-auth
+    stringData:
+      AWS_ACCESS_KEY_ID: <<your access key>>
+      AWS_SECRET_ACCESS_KEY: <<your secret>>
+    type: Opaque
+    ```
+    
+12. Add the secret to the `3scale-amp` namespace:
+    
+    ```bash
+    oc create -f aws-auth.yml
+    ```
+    
+13. Create the API Manager specification `amp-s3.yml`:
+    
+    ```yaml
+    apiVersion: apps.3scale.net/v1alpha1
+    kind: APIManager
+    metadata:
+      name: example-apimanager
+    spec:
+      wildcardDomain: <<your wildcard domain>>
+      resourceRequirementsEnabled: false
+      system:
+        fileStorage:
+          amazonSimpleStorageService:
+            awsRegion: << your aws region>>
+            awsBucket: << your s3 bucket >>
+            awsCredentialsSecret:
+              name: aws-auth
+    ```
+
+14. Create the `smtp.yml` configmap to configure SMTP access:
+
+    ```yaml
+    kind: ConfigMap
+    apiVersion: v1
+    metadata:
+      name: smtp
+      labels:
+        app: 3scale-api-management
+        threescale_component: system
+        threescale_component_element: smtp
+    data:
+      address: 'smtp.gmail.com'
+      authentication: 'login'
+      domain: 'redhat.com'
+      openssl.verify.mode: 'false'
+      password: '<< your password>>'
+      port: '587'
+      username: '<< your userid>>'
+    ```
+
+15. Add the configmap to `3scale-amp` namespace:
+
+    ```
+    oc create -f smtp.yml
+    ```
+
+16. From the OpenShift admin console, install the `3scale-community-operator` from Operator Hub to the `3scale-amp` namespace.
+17. Choose `Version 2.10`
+18. Once Operator is installed and ready, get back to the terminal and add the `APIManager`:
+
+    ```
+    oc create -f amp-s3.yml
+    ```
+19. Wait for 10 mins for all the 3scale pods to be ready.
+20. Login to the Master URL and the `3scale-admin` tenant.
+21. Verify that you can open the Developer Portal and the Content is loaded correctly.
+22. Also verify the S3 bucket to check that the provider folder and the associated CMS content is created in the bucket.
+
+## Next Steps
+`TODO:` In the next section, we will explore creating the tenants using operator.
+
+## Ansible
+`TODO:` Use an ansible role to deploy `3scale-operator` and manage installation of AMP and tenants.
+
+8500
