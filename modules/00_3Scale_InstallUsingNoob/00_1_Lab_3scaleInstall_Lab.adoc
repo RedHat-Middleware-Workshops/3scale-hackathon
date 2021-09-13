@@ -88,8 +88,40 @@ type: Opaque
 
 === Install 3scale operator
 
-Install 3scale operator as shown in the screenshots below
+Install 3scale operator as shown in the screenshots below with the default values
 
 image::images/install_3scale_operator_1.png[]
 
 image::images/install_3scale_operator_2.png[]
+
+=== Create 3scale APIManager CR
+
+Create 3scale APIManager CR to provision 3scale.
+
+. Get the wild card domain of the OCP cluster from the console URL. E.g. `apps.cluster-0228.0228.sandbox1124.opentlc.com`
+
+image::images/3scale_wildcarddomain.png[]
+
+. Go to Operators -> Installed Operators->  Red Hat Integration - 3Scale
+Under APIManager select *Create instance* and switch to the YAML view and paste YAML. YAML sample is
+
+----
+apiVersion: apps.3scale.net/v1alpha1
+kind: APIManager
+metadata:
+  name: "3scale-test"
+spec:
+  wildcardDomain: "{{wildcard domain}}"
+  resourceRequirementsEnabled: false
+  system:
+    fileStorage:
+      simpleStorageService:
+        configurationSecretRef:
+          name: aws-auth
+----
+
+
+image::images/3scale_apimanager_1.png[]
+
+image::images/3scale_apimanager.png[]
+
