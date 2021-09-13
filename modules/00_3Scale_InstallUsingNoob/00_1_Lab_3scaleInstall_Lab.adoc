@@ -4,9 +4,7 @@
 :linkattrs:
 :data-uri:
 
-== Environment Setup Lab
-
-.Goals
+== Goals of the lab
 
 * Create nooba storage class using OpenShift container storage operator
 * Create object bucket claim required for 3scale
@@ -28,30 +26,33 @@ It takes up to 75 minutes to provision a cluster in rhpds. You will receive an e
 == Create nooba storage class
 
 === Install OpenShift Container Storage (OCS) Operator
-. Login to the OpenShift console using the email received upon provisioning rhpds cluster
+. Login to the OpenShift console using the details in the email received upon provisioning rhpds cluster
 . Go to Operators -> Operator Hub
-. Install OpenShift Container Storage operator as shown below with default values
+. Install *OpenShift Container Storage* operator as shown below with default values
 +
 image::images/ocs_operator.png[]
 +
-. Upon successful installation of the ocs operator, it should create openshift-storage namespace. Go to the OCS operator just installed and create storage cluster as shown below
-
+. Upon successful installation of the ocs operator, it should create *openshift-storage* namespace. Go to the OCS operator just installed and create storage cluster as shown below
++
 image::images/nooba_create_storagecluster.png[]
-
++
+. Click *Create StorageCluster* and select the following values
++
 image::images/nooba_create_storagecluster_capacity.png[]
++
 
 In about 10 minutes storage class *openshift-storage.noobaa.io* will be available under Storage->Storageclasses
 
 == Install 3scale
 
-Create a namespace (project) called *3scale* where 3scale will be installed using the Operator using cli or console
+Create a namespace (project) called *3scale* where 3scale will be installed using the Operator
 -----
 $ oc new-project 3scale
 -----
 
 === Create Object Bucket Claim
 
-Go to Storage->Object Bucket Claims and create object claim with details as shown below
+Go to Storage->Object Bucket Claims and create *Object BucketClaim* with details as shown below
 
 image::images/create_objectbucketclaim.png[]
 
@@ -60,7 +61,7 @@ image::images/create_objectbucketclaim_details.png[]
 - Storage class should be *openshift-storage.noobaa.io*
 - Use the default *noobaa-default-bucket-class*
 
-Upon creating the Object Bucket Claim, it should show details something like below. Capture the values that will be used to create a secret `aws-auth` in the next step
+Upon creating the Object BucketClaim, it should show details something like below. Capture the values that will be used to create a secret `aws-auth` in the next step
 
 image::images/nooba_objectbucketclaim_details.png[]
 
@@ -88,7 +89,7 @@ type: Opaque
 
 === Install 3scale operator
 
-Install 3scale operator as shown in the screenshots below with the default values
+Install 3scale operator in *3scale* namespace as shown in the screenshots below with the default values
 
 image::images/install_3scale_operator_1.png[]
 
@@ -119,7 +120,7 @@ spec:
         configurationSecretRef:
           name: aws-auth
 ----
-
+Please replace "wildcard domain" with your cluster wildcard domain.
 
 image::images/3scale_apimanager_1.png[]
 
