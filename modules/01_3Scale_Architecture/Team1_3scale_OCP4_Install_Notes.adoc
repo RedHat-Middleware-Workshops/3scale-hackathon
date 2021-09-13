@@ -81,15 +81,10 @@ This Team will be using RWO storage.
     # oc create -f smtp.yml
 
 16. From the OpenShift admin console, install the `3scale-community-operator` from Operator Hub to the `3scale-amp` namespace.
-17. Choose `Version 2.10`
-18. Once Operator is installed and ready, get back to the terminal and add the `APIManager`:
-
-    oc create -f amp-s3.yml
-
+17. Choose `threescale-2.10`
 19. Wait for 10 mins for all the 3scale pods to be ready.
 20. Login to the Master URL and the `3scale-admin` tenant.
 21. Verify that you can open the Developer Portal and the Content is loaded correctly.
-22. Also verify the S3 bucket to check that the provider folder and the associated CMS content is created in the bucket.
 
 ## Next Steps
 `TODO:` In the next section, we will explore creating the tenants using operator.
