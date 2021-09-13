@@ -9,7 +9,7 @@ Primarily, this is due to following issues:
 - 3scale Operator does not allow customization of template used, so the resources and limits cannot be changed. This interferes with the quotas in the OpenTLC and RHPDS OCP workshop instances.
 
 # Installation Overview
-1. link:{#1-request-rhpds--create-project}[Request RHPDS + create project]
+1. Request RHPDS + create project
 2. In web console, update machinesets to change 3rd set from 0 to 1 replica
 3. Install 3scale operator
 4. Install OpenShift Container Storage operator
