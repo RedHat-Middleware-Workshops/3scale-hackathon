@@ -47,7 +47,8 @@ Primarily, this is due to following issues:
 ### 4. Storage
 This Team will be using RWO storage.
 
-1. Install the OCS operator
+1. Install the OpenShift Container Storage operator to the `openshift-storage` namespace.
+2. Select update channel `stable-4.8`
 2. Create ClusterStorage resource using all 3 machines
 
 ### 5. Create ClusterStorage resource
