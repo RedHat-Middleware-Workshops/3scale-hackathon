@@ -31,9 +31,9 @@ It takes up to 75 minutes to provision a cluster in rhpds. You will receive an e
 . Login to the OpenShift console using the email received upon provisioning rhpds cluster
 . Go to Operators -> Operator Hub
 . Install OpenShift Container Storage operator as shown below with default values
-
++
 image::images/ocs_operator.png[]
-
++
 . Upon successful installation of the ocs operator, it should create openshift-storage namespace. Go to the OCS operator just installed and create storage cluster as shown below
 
 image::images/nooba_create_storagecluster.png[]
