@@ -134,7 +134,7 @@ This Team will be using RWO storage.
         redisResources:
           limits:
             memory: 6Gi
-      wildcardDomain: apps.cluster-5ffxf.5ffxf.sandbox1868.opentlc.com
+      wildcardDomain: <WILDCARD-DOMAIN>
   
     # oc create -f amp-s3.yml
 
