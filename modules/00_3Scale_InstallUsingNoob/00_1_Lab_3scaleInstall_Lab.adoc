@@ -61,9 +61,11 @@ image::images/create_objectbucketclaim_details.png[]
 - Use the default *noobaa-default-bucket-class*
 
 Upon creating the Object Bucket Claim, it should show details something like below. Capture the values that will be used to create a secret `aws-auth` in the next step
+
 +
 image::images/nooba_objectbucketclaim_details.png[]
 +
+
 === Create aws-auth secret
 
 In 3scale project, go to workloads -> secrets -> Create -> From Yaml
