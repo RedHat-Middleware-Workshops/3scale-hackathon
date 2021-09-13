@@ -8,11 +8,22 @@ Primarily, this is due to following issues:
 - On OCP 3.x, Gluster FS is available for providing RWX storage necessary for 3scale. On OCP 4.x, no RWx storage is available on OpenTLC or RHPDS.
 - 3scale Operator does not allow customization of template used, so the resources and limits cannot be changed. This interferes with the quotas in the OpenTLC and RHPDS OCP workshop instances.
 
-## Installation
+## Installation Overview
+1. Request RHPDS
+2. In web console, update machinesets to change 3rd set from 0 to 1 replica
+3. Install 3scale operator
+4. Install OpenShift Container Storage operator
+5. Create ClusterStorage resource using all 3 machines
+6. Create APIManager resource according to existing instructions
+
+# Note: The notes below are not yet in order!
+
 ### Storage
 This Team will be using RWO storage.
+1. Install the OCS operator
+2. Create ClusterStorage resource using all 3 machines
 
-### OCP Environment
+### Request RHPDS
 1. Order `OpenShift Workshop 4.8` on the [RHPDS catalog](https://rhpds.redhat.com/catalog/explorer).
 2. Confirm the warning, and leave all other default settings.
 3. Select `Training` as the Purpose.
