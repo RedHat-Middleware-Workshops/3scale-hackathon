@@ -57,6 +57,8 @@ This Team will be using RWO storage.
 
 14. Create the `smtp.yml` configmap to configure SMTP access:
 
+    # vim smtp.yml
+    
     kind: ConfigMap
     apiVersion: v1
     metadata:
@@ -76,7 +78,7 @@ This Team will be using RWO storage.
 
 15. Add the configmap to `3scale-amp` namespace:
 
-    oc create -f smtp.yml
+    # oc create -f smtp.yml
 
 16. From the OpenShift admin console, install the `3scale-community-operator` from Operator Hub to the `3scale-amp` namespace.
 17. Choose `Version 2.10`
