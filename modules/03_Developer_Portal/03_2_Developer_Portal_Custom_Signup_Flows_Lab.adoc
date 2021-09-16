@@ -425,9 +425,11 @@ The values (`internal` and `public`) of this feature correspond to the values of
 +
 image::images/amp_admin_portal_product_application_usage_rules.png[]
 
-. Click *Update Service*.
+. Click *Update Product*.
 
 . Navigate to the *Basic* application plan of the Echo API.
+. Go to *Products -> API -> Applications -> Application Plans*
+. Click on plan *Basic* and in the page loaded, scroll down to see the features list.
 . Create a new *Feature* with the following values:
 * *Name*: `internal`
 * *System name*: `internal`
