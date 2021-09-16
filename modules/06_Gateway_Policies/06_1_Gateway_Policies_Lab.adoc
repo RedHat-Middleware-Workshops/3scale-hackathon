@@ -4,6 +4,8 @@
 :linkattrs:
 :data-uri:
 
+
+
 == API Gateway Policies Lab
 
 In this lab you learn about API gateway policies.
