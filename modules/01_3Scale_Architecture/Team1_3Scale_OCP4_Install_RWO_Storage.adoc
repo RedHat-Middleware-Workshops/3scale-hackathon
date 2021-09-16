@@ -63,7 +63,9 @@
    # oc create -f system-storage-pvc.yaml 
    persistentvolumeclaim/system-storage created
     
-8. Once this is successful, create the API Manager `amp.yaml` Be sure to update the `wildcardDomain`; example: `apps.cluster-5ffxf.5ffxf.sandbox1868.opentlc.com`
+8. In the UI, install the `3scale API Management` Community operator with the `threescale-2.10` channel to the `3scale-amp` namespace via Operator Hub.
+
+9. Once this is successful, create the API Manager `amp.yaml` Be sure to update the `wildcardDomain`; example: `apps.cluster-5ffxf.5ffxf.sandbox1868.opentlc.com`
 
   # vim amp.yaml
   
@@ -84,8 +86,11 @@
         limits:
           memory: 6Gi
     wildcardDomain: "{{ route_subdomain }}" 
+    
+    # oc create -f amp.yaml
+    apimanager.apps.3scale.net/apimanager created
 
-9. Create the API Manager specification `amp-s3.yml`. Be sure to update the `wildcardDomain`.
+10. Create the API Manager specification `amp-s3.yml`. Be sure to update the `wildcardDomain`.
 
   apiVersion: apps.3scale.net/v1alpha1
   kind: APIManager
@@ -95,8 +100,11 @@
   spec:
     wildcardDomain: "{{ route_subdomain }}"
     resourceRequirementsEnabled: false
+    
+  # oc create -f amp-s3.yaml
+  apimanager.apps.3scale.net/3scale-amp created
 
-10. After few minutes your API Manager Pods will be up and you should be able to access the `3scale-admin` URL.
+11. After few minutes your API Manager Pods will be up and you should be able to access the `3scale-admin` URL.
 
   # oc get pods -n 3scale-amp
 
