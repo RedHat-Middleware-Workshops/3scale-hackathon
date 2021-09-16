@@ -34,7 +34,7 @@
         memory: 32Gi
       type: Container
     - max:
-        cpu: "2"
+        cpu: "3"
         memory: 32Gi
       type: Pod
 
@@ -107,7 +107,51 @@
 
 11. After few minutes your API Manager Pods will be up and you should be able to access the `3scale-admin` URL.
 
-  # oc get pods
+  # oc get pvc,pods
+  NAME                                          STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+  persistentvolumeclaim/backend-redis-storage   Bound    pvc-f10c154a-6ac9-4b03-a49c-b76626b4d000   1Gi        RWO            gp2            15m
+  persistentvolumeclaim/mysql-storage           Bound    pvc-809420c5-0b0a-4341-939e-5c279d08e65c   1Gi        RWO            gp2            15m
+  persistentvolumeclaim/system-redis-storage    Bound    pvc-10700265-455f-4dd8-a229-09f508fb834c   1Gi        RWO            gp2            15m
+  persistentvolumeclaim/system-storage          Bound    pvc-bf93ec46-a5f3-4f0d-b785-93f66936149e   1Gi        RWO            gp2            10m
+
+  NAME                                  READY   STATUS      RESTARTS   AGE
+  pod/3scale-operator-c6d495784-9299n   1/1     Running     0          112m
+  pod/apicast-production-1-deploy       0/1     Completed   0          15m
+  pod/apicast-production-1-xfbtp        1/1     Running     0          15m
+  pod/apicast-staging-1-deploy          0/1     Completed   0          15m
+  pod/apicast-staging-1-nrjvq           1/1     Running     0          15m
+  pod/backend-cron-1-deploy             0/1     Completed   0          15m
+  pod/backend-cron-1-tf5z4              1/1     Running     0          15m
+  pod/backend-listener-1-deploy         0/1     Completed   0          15m
+  pod/backend-listener-1-p6mzv          1/1     Running     0          15m
+  pod/backend-redis-1-deploy            0/1     Completed   0          15m
+  pod/backend-redis-1-k254h             1/1     Running     0          15m
+  pod/backend-worker-1-deploy           0/1     Completed   0          15m
+  pod/backend-worker-1-nbf45            1/1     Running     0          15m
+  pod/system-app-1-deploy               0/1     Completed   0          15m
+  pod/system-app-1-hook-post            0/1     Completed   0          8m22s
+  pod/system-app-1-hook-pre             0/1     Completed   0          15m
+  pod/system-app-1-jvf79                3/3     Running     0          9m52s
+  pod/system-memcache-1-4w5jp           1/1     Running     0          15m
+  pod/system-memcache-1-deploy          0/1     Completed   0          15m
+  pod/system-mysql-1-deploy             0/1     Completed   0          15m
+  pod/system-mysql-1-prkl8              1/1     Running     0          15m
+  pod/system-redis-1-deploy             0/1     Completed   0          15m
+  pod/system-redis-1-hkpzd              1/1     Running     0          15m
+  pod/system-sidekiq-1-deploy           0/1     Completed   0          15m
+  pod/system-sidekiq-1-gjdvx            1/1     Running     0          15m
+  pod/system-sphinx-1-deploy            0/1     Completed   0          15m
+  pod/system-sphinx-1-mpjxj             1/1     Running     0          15m
+  pod/zync-1-deploy                     0/1     Completed   0          15m
+  pod/zync-1-v8zbm                      1/1     Running     0          15m
+  pod/zync-database-1-deploy            0/1     Completed   0          15m
+  pod/zync-database-1-dz2vg             1/1     Running     0          15m
+  pod/zync-que-1-deploy                 0/1     Completed   0          15m
+  pod/zync-que-1-q9sdr                  1/1     Running     1          15m
+
+12. Login to the API Manager console. To find the login credentials, locate the following secret:
+
+  # oc describe secret system-seed
 
 # Optional:
 
