@@ -1,0 +1,76 @@
+# OCP Environment
+1. Start with the OCP 4.8 workshop deployer on RHPDS.
+2. `ssh` to the bastion using the SSH password provided in the email.
+3. `sudo` as `root` user:
+  
+  # sudo -i
+  
+4. Create `3scale-amp` project.
+
+  # oc new-project 3scale-amp
+
+5. Find the resource limits for this project:
+
+  # oc get limitranges
+  NAME                              CREATED AT
+  3scale-amp-core-resource-limits   2019-12-17T15:33:34Z
+
+6. Edit the resource limit `3scale-amp-core-resource-limits` to change the resource limits as follows. The limit for memory as changed here to `32 GB` to ensure the `redis-*` pods of 3scale are deployed. This is only the max limit and does not affect the requested resources.
+
+  spec:
+    limits:
+    - default:
+        cpu: 500m
+        memory: 1536Mi
+      defaultRequest:
+        cpu: 50m
+        memory: 256Mi
+      max:
+        cpu: "2"
+        memory: 32Gi
+      type: Container
+    - max:
+        cpu: "2"
+        memory: 32Gi
+      type: Pod
+
+7. Create `system-storage` PVC using this YAML. Use the correct namespace.
+
+  https://gist.githubusercontent.com/satyaj/c3b293ffdfba2af27f286ba3f964d6cd/raw/3840862d02c067572e24c6cf645d0bb57534fceb/system-storage.yaml
+
+
+8. Once this is successful, create the API Manager `amp.yaml`
+
+9. Create the API Manager specification `amp-s3.yml`:
+
+  https://gist.github.com/satyaj/6e93e61a4e268cf2a427c76d7d99e267
+
+10. After few minutes your API Manager Pods will be up and you should be able to access the `3scale-admin` URL.
+
+# Optional:
+
+### SMTP Access
+1. Create the `smtp.yml` configmap to configure SMTP access:
+
+  kind: ConfigMap
+  apiVersion: v1
+  metadata:
+    name: smtp
+    labels:
+      app: 3scale-api-management
+      threescale_component: system
+      threescale_component_element: smtp
+  data:
+    address: 'smtp.gmail.com'
+    authentication: 'login'
+    domain: 'redhat.com'
+    openssl.verify.mode: 'false'
+    password: '<< your password>>'
+    port: '587'
+    username: '<< your userid>>'
+
+2. Add the configmap to `3scale-amp` namespace:
+
+  # oc create -f smtp.yml
+
+3. Once SMTP is updated, redeploy the system pods.
