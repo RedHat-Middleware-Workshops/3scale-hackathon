@@ -30,7 +30,7 @@
         cpu: 50m
         memory: 256Mi
       max:
-        cpu: "2"
+        cpu: "3"
         memory: 32Gi
       type: Container
     - max:
