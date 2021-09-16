@@ -1,4 +1,5 @@
 # Installing 3Scale in OCP 4.8 with RWO Storage
+
 Fast 3Scale set-up using RWO storage, ideal for quick demos.
 
 ## OCP Environment
@@ -110,13 +111,7 @@ Fast 3Scale set-up using RWO storage, ideal for quick demos.
 
 11. After few minutes your API Manager Pods will be up and you should be able to access the `3scale-admin` URL.
 
-  # oc get pvc,pods
-  NAME                                          STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-  persistentvolumeclaim/backend-redis-storage   Bound    pvc-f10c154a-6ac9-4b03-a49c-b76626b4d000   1Gi        RWO            gp2            15m
-  persistentvolumeclaim/mysql-storage           Bound    pvc-809420c5-0b0a-4341-939e-5c279d08e65c   1Gi        RWO            gp2            15m
-  persistentvolumeclaim/system-redis-storage    Bound    pvc-10700265-455f-4dd8-a229-09f508fb834c   1Gi        RWO            gp2            15m
-  persistentvolumeclaim/system-storage          Bound    pvc-bf93ec46-a5f3-4f0d-b785-93f66936149e   1Gi        RWO            gp2            10m
-
+  # oc get pods 
   NAME                                  READY   STATUS      RESTARTS   AGE
   pod/3scale-operator-c6d495784-9299n   1/1     Running     0          112m
   pod/apicast-production-1-deploy       0/1     Completed   0          15m
@@ -153,18 +148,20 @@ Fast 3Scale set-up using RWO storage, ideal for quick demos.
   pod/zync-que-1-q9sdr                  1/1     Running     1          15m
 
 ## Logging In to the API Manager Console
+
 1. To find the login credentials, locate the 'system-seed` secret in the UI under `Workloads > Secrets > system-seed`. Ensure you are in the `3scale-amp` namespace.
 2. Select `Reveal Values` to locate `ADMIN_PASSWORD` and `ADMIN_USER`.
 3. Navigate to `Networking > Routes` and locate the `3scale-admin` location URL. Alternatively, use the CLI:
   
   # oc get routes | grep 3scale-admin
-zync-3scale-provider-5rv76   3scale-admin.apps.cluster-17b4.17b4.sandbox1456.opentlc.com    system-provider   http    edge/Redirect   None
+  zync-3scale-provider-5rv76   3scale-admin.apps.cluster-17b4.17b4.sandbox1456.opentlc.com    system-provider   http    edge/Redirect   None
 
 4. Navigate to the route URL and login using the credentials from step 2.
 
 # Optional:
 
 ### SMTP Access
+
 1. Create the `smtp.yml` configmap to configure SMTP access:
 
   kind: ConfigMap
