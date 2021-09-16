@@ -1,6 +1,6 @@
 # OCP Environment
 
-1. Start with the OCP 4.8 workshop deployer on RHPDS.
+1. Start with the OCP 4.8 workshop deployer on `RHPDS`.
 2. `ssh` to the bastion using the SSH password provided in the email.
 3. `sudo` as `root` user:
   
@@ -63,9 +63,10 @@
    # oc create -f system-storage-pvc.yaml 
    persistentvolumeclaim/system-storage created
     
-8. In the UI, install the `3scale API Management` Community operator with the `threescale-2.10` channel to the `3scale-amp` namespace via Operator Hub.
+8. In the UI, install the `3scale API Management` Community operator with the `threescale-2.10` channel to the `3scale-amp` namespace via Operator Hub. 
 
-9. Once this is successful, create the API Manager `amp.yaml` Be sure to update the `wildcardDomain`; example: `apps.cluster-5ffxf.5ffxf.sandbox1868.opentlc.com`
+9. Once this is successful, create the API Manager `amp.yaml`. Make sure all the operator pods are up before creating an API Manager instance. 
+   Be sure to update the `wildcardDomain`. Example: `apps.cluster-5ffxf.5ffxf.sandbox1868.opentlc.com`
 
   # vim amp.yaml
   
@@ -106,7 +107,7 @@
 
 11. After few minutes your API Manager Pods will be up and you should be able to access the `3scale-admin` URL.
 
-  # oc get pods -n 3scale-amp
+  # oc get pods
 
 # Optional:
 
