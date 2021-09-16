@@ -17,6 +17,9 @@
 
 6. Edit the resource limit `3scale-amp-core-resource-limits` to change the resource limits as follows. The limit for memory as changed here to `32 GB` to ensure the `redis-*` pods of 3scale are deployed. This is only the max limit and does not affect the requested resources.
 
+  # oc edit limitranges
+  
+  [...]
   spec:
     limits:
     - default:
@@ -34,18 +37,47 @@
         memory: 32Gi
       type: Pod
 
-7. Create `system-storage` PVC using this YAML. Use the correct namespace.
+7. Create `system-storage` PVC using this YAML in the `3scale-amp` namespace.
 
-  https://gist.githubusercontent.com/satyaj/c3b293ffdfba2af27f286ba3f964d6cd/raw/3840862d02c067572e24c6cf645d0bb57534fceb/system-storage.yaml
+  # vim system-storage-pvc.yaml
 
+  apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    # This name uniquely identifies the PVC. Will be used in deployment below.
+    name: system-storage
+    namespace: 3scale-amp
+    labels:
+      app: 3scale-api-management
+      threescale_component: system
+  spec:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+    storageClassName: gp2
+    volumeMode: Filesystem
 
+   # oc create -f system-storage-pvc.yaml 
+   persistentvolumeclaim/system-storage created
+    
 8. Once this is successful, create the API Manager `amp.yaml`
 
-9. Create the API Manager specification `amp-s3.yml`:
+9. Create the API Manager specification `amp-s3.yml`. Be sure to update the `wildcardDomain`.
 
-  https://gist.github.com/satyaj/6e93e61a4e268cf2a427c76d7d99e267
+  apiVersion: apps.3scale.net/v1alpha1
+  kind: APIManager
+  metadata:
+    name: "3scale-amp"
+    namespace: "3scale-amp"
+  spec:
+    wildcardDomain: "{{ route_subdomain }}"
+    resourceRequirementsEnabled: false
 
 10. After few minutes your API Manager Pods will be up and you should be able to access the `3scale-admin` URL.
+
+  # oc get pods -n 3scale-amp
 
 # Optional:
 
