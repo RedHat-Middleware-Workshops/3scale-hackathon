@@ -1,4 +1,7 @@
-# OCP Environment
+# Installing 3Scale in OCP 4.8 with RWO Storage
+Fast 3Scale set-up using RWO storage, ideal for quick demos.
+
+## OCP Environment
 
 1. Start with the OCP 4.8 workshop deployer on `RHPDS`.
 2. `ssh` to the bastion using the SSH password provided in the email.
@@ -149,9 +152,15 @@
   pod/zync-que-1-deploy                 0/1     Completed   0          15m
   pod/zync-que-1-q9sdr                  1/1     Running     1          15m
 
-12. Login to the API Manager console. To find the login credentials, locate the following secret:
+## Logging In to the API Manager Console
+1. To find the login credentials, locate the 'system-seed` secret in the UI under `Workloads > Secrets > system-seed`. Ensure you are in the `3scale-amp` namespace.
+2. Select `Reveal Values` to locate `ADMIN_PASSWORD` and `ADMIN_USER`.
+3. Navigate to `Networking > Routes` and locate the `3scale-admin` location URL. Alternatively, use the CLI:
+  
+  # oc get routes | grep 3scale-admin
+zync-3scale-provider-5rv76   3scale-admin.apps.cluster-17b4.17b4.sandbox1456.opentlc.com    system-provider   http    edge/Redirect   None
 
-  # oc describe secret system-seed
+4. Navigate to the route URL and login using the credentials from step 2.
 
 # Optional:
 
