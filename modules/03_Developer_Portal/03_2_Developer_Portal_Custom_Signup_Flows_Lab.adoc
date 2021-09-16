@@ -456,10 +456,14 @@ The first new partial (called: _unauthenticated_noplan_signup_form_) renders in 
 The second new partial (called: _custom_field_signup_form_)  renders in the Developer Portal only after the API consumer has registered a new account and authenticated in.
 
 . Add the `unauthenticated_noplan_signup_form` partial using the contents of https://raw.githubusercontent.com/btison/3scale_labs/main/devportal/signup/unauthenticated_noplan_signup_form.html.liquid.
-.. In the *Homepage*, modify the `include` statement near line 121:
+.. In the *Homepage*, modify the `include` statement near line 121, between a </section> tag and an {% endif %}:
 +
 ----
-{% include 'unauthenticated_noplan_signup_form' %}
+  </section>
+
+  {% include 'unauthenticated_noplan_signup_form' %}
+
+{% endif %}
 ----
 
 * This partial is rendered for unauthenticated users.
@@ -554,7 +558,7 @@ You use *Groups* and *Sections* for this.
 For this lab you configure a couple of new APIs, for which you reuse the Echo API Backend.
 
 . In the Admin Portal, navigate to *Dashboard*
-. Select the *Products* tab, and click *New Product*.
+. Select the *Products* tab, and click *Create Product*.
 . On the _New Product_ page:
 * Select *Define manually*
 * *Name*: `Echo API Public`
@@ -620,6 +624,7 @@ image::images/amp_admin_portal_service_plan_feature.png[]
 * *System name*: `serviceplan/private`
 * *Description*: `This is the private service plan.`
 
+. After save the new feature, click on the image:images/amp_admin_portal_icon_disabled.png[] in the *Enabled?* column to enable the feature.
 . As you did with the previous service, make sure that the *Default* service plan text box for this API is empty.
 
 === Disable Default Service Plans
@@ -673,7 +678,7 @@ Later in the lab, you see how an API provider can associate groups to API consum
 image::images/dev_portal_cms_new_group.png[]
 
 . Create another new group called `Private` and assign it the `private` section.
-. Confirm that both groups are created and the correct sections are assigned:
+. Confirm that both groups are created and the correct sections are assigned (click on the group name and verify that the section is marked, you may need mark the section again after create the group) :
 +
 image::images/dev_portal_cms_groups.png[]
 
