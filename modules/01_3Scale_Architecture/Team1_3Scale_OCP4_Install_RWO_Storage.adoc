@@ -1,4 +1,5 @@
 # OCP Environment
+
 1. Start with the OCP 4.8 workshop deployer on RHPDS.
 2. `ssh` to the bastion using the SSH password provided in the email.
 3. `sudo` as `root` user:
@@ -62,7 +63,27 @@
    # oc create -f system-storage-pvc.yaml 
    persistentvolumeclaim/system-storage created
     
-8. Once this is successful, create the API Manager `amp.yaml`
+8. Once this is successful, create the API Manager `amp.yaml` Be sure to update the `wildcardDomain`; example: `apps.cluster-5ffxf.5ffxf.sandbox1868.opentlc.com`
+
+  # vim amp.yaml
+  
+  apiVersion: apps.3scale.net/v1alpha1
+  kind: APIManager
+  metadata:
+    name: apimanager
+  spec:
+    system:
+      fileStorage:
+        persistentVolumeClaim:
+          storageClassName: gp2
+      redisResources:
+        limits:
+          memory: 6Gi
+    backend:
+      redisResources:
+        limits:
+          memory: 6Gi
+    wildcardDomain: "{{ route_subdomain }}" 
 
 9. Create the API Manager specification `amp-s3.yml`. Be sure to update the `wildcardDomain`.
 
