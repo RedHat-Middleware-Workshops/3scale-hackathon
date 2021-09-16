@@ -1,3 +1,6 @@
+# NOTE
+These steps are an alternative install using OCS, NOT RWO Storage.
+
 # Early Notes on Running 3scale 2.10 on OCP 4.8
 ### Background
 The 3scale course has been delivered so far on OCP 3.x even though 3scale has been supported on OCP 4 since 3scale 2.5.
