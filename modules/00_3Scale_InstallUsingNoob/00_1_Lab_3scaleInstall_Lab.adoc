@@ -69,7 +69,7 @@ image::images/nooba_objectbucketclaim_details.png[]
 
 In 3scale project, go to workloads -> secrets -> Create -> From Yaml
 
-Replace access_key, secret_key, bukcet_name, endpoint with the values captured above. *AWS_REGION* value can be anything. `local-s3-bucket` is a made up value
+Replace access_key, secret_key, bucket_name, endpoint with the values captured above. *AWS_REGION* value can be anything. `local-s3-bucket` is a made up value. Please note that endpoint port value when Object Bucket Claim created is 443. Replace port 443 with 80. E.g. s3.openshift-storage.svc:443 is changed to s3.openshift-storage.svc:80
 
 ----
 apiVersion: v1                                                       
@@ -82,7 +82,7 @@ stringData:
   AWS_BUCKET: <<bucket_name>>
   AWS_REGION: local-s3-bucket
   AWS_HOSTNAME: <<endpoint>>
-  AWS_PROTOCOL: HTTPS
+  AWS_PROTOCOL: HTTP
   AWS_PATH_STYLE: 'true'
 type: Opaque
 ----
