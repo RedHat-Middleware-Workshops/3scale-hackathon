@@ -186,3 +186,10 @@ Fast 3Scale set-up using RWO storage, ideal for quick demos.
   # oc create -f smtp.yml
 
 3. Once SMTP is updated, redeploy the system pods.
+
+# Next Steps
+
+In the next section, we will explore 3Scale capabilities
+
+- Create Tenant using CR
+- Create Product/Backend/Application Plan/Metrics (https://access.redhat.com/documentation/en-us/red_hat_3scale_api_management/2.10/html/operating_3scale/provision-threescale-services-via-operator)
