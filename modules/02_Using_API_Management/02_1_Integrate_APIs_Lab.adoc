@@ -122,10 +122,9 @@ image::images/amp_admin_portal_products_api_basic_application_plan.png[]
 * *System Name*: `products/premium`
 * Click *Create Application Plan*
 
-. On the *Application Plans* overview page, select `Products Basic Plan` from the *Default Plan* drop-down.
+. On the *Application Plans* overview page, select `Products Basic Plan` from the *Default Plan* drop-down and *Publish* both `Products Basic Plan` and `Products Premium Plan` :
 +
 image::images/amp_admin_portal_products_api_publish_application_plan.png[]
-. Click *Publish* for both `Products Basic Plan` and `Products Premium Plan`:
 
 === Define Accounts and Users
 
