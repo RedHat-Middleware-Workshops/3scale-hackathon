@@ -1,4 +1,5 @@
 # NOTE
+
 These steps are an alternative install using OCS, NOT RWO Storage.
 
 # Early Notes on Running 3scale 2.10 on OCP 4.8
