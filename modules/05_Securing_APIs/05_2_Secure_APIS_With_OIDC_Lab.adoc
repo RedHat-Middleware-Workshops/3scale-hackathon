@@ -43,7 +43,7 @@ This section of the lab assumes your instructor has already provisioned an SSO r
 
 The purpose of this section is to provide details regarding how to register as an administrative user of that previously provisioned SSO realm.
 
-Your realm is configured such that the first user that registers becomes the realm administrator.
+Your realm is configured such that the first user that registers becomes the realm administrator. If when you login a *403 Forbiden* message shows up, just follow the instructions bellow to add the needed role mappings to your user.
 
 . Obtain the URL to the console of your target realm:
 +
@@ -55,11 +55,42 @@ $ echo -en "\nhttps://$RHSSO_URL/auth/admin/$AMP_SSO_REALM/console\n\n"
 +
 image::images/rhsso_realm_login.png[]
 
+. In a new tab navigate to the same URL, log in the Realm and make sure that the *User registration* option is enabled (The user and password is in the secret *credential-sso* inside the RHSSO project).
+
++
+image::images/rhsso_realm_user_registration_enable.png[]
+
+
+ If the 'User registration' field is OFF, change it to ON and click 'Save', then logout from this session and go back to the previous TAB
+
 . Click the *Register* link to register as a new user.
 
 . Fill in all fields of the registration form.  The email address has to be a valid, but not necessarily a genuine email address.
 . Click *Register*.
 . You are redirected to the realm overview page. The newly registered realm user has administrative access to all settings of the realm.
+
+[NOTE]
+====
+If you see an 403 error when redirected to the realm overview page, than follow the 4 steps bellow to correct this
+====
+
+. You will need to change your new user Role Mapping, using the RHSSO admin user. To do so, log in the rhsso as admin (the username and password can be retrieved in the secret credential-sso, inside the RHSSO project on openshift), after login go to the $AMP_SSO_REALM and select *Users*
+
++
+image::images/rhsso_realm_user_page.png[]
+
+. In the list of users that is presented, click on the id of the user you just created:
+
++
+image::images/rhsso_realm_user_list_page.png[]
+
+. Then go to the *Role Mappings* tab, in *Client Roles* write 'realm-management' and in the list of *Available Roles* select *manage-realms* and *realm-admin*, then click on the *Add selected* option.
+
++
+image::images/rhsso_realm_user_rolemapping_page.png[]
+
+. Now you can go back to the tab where you were redirected and refresh the page, you will now see the Realm configs.
+
 +
 image::images/rhsso_realm_overview_page.png[]
 
@@ -162,17 +193,27 @@ In this section of the lab you configure an API product on 3scale protected with
 The backend for this new API is the _Products service_ which you leveraged in previous labs as well.
 
 . In a browser window, navigate to your tenant's 3scale Admin Portal.
-. Navigate to *Dashboard*, select the *Products* tab and click *New Product*.
+. Navigate to *Dashboard*, in the *Products* window, click *Create Product*.
 . On the _New Product_ page:
-* Select *define manually*
+* Select *Define manually*
 * *Name*: `Products API OIDC`
 * *System Name*: `products_api_oidc`
 . Select *Create Product* to create the API.
-. Create an application plan for the new API:
+. In the *Overview* page that is presented after you create your Product , click on *Create Application Plan* link and fill with the follow information:
 * *Name*: `Products OIDC Basic Plan`
 * *System Name*: `products_oidc/basic`
+* Click *Create Application Plan*
 . Publish the application plan.
-. Add a backend to the API. Select the `Products Service Backend` backend, and set the path to `/`.
+
++
+image::images/amp_admin_portal_application_plan_publish.png[]
+
+. Add a backend to the API. Select the `Products Service Backend` backend, and set the path to `/`. To do this, go to *Products* -> *Products API OIDC* -> *Integration* -> *Backends* and click *Add Backend*
+
++
+image::images/amp_admin_portal_product_backend.png[]
+
+
 . The default mapping rules allow all `GET` operations, which is sufficient for this lab.
 . On the *Settings* page of the API:
 * Select `APIcast self-managed`.
@@ -226,9 +267,19 @@ In this section of the lab you create an application for the _Products API OIDC_
 * *Organization/Group Name*: `TestOIDC`
 . Click *Create* to create the user and account.
 . Delete the applications for the new account which were created by default.
+
++
+image::images/amp_admin_portal_account_application.png[]
+
++
+image::images/amp_admin_portal_account_application_create.png[]
+
 . Create a new _Application_ for the TestOIDC account.
 * *Application Plan*: `Products OIDC Basic Plan`
 * *Name*: `TestOIDC Products App`
+
+
+
 . On the overview page for the application, click edit in the _API Credentials_ section.
 +
 image::images/amp_admin_portal_application_api_credentials.png[]
