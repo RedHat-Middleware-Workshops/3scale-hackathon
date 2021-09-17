@@ -1,0 +1,25 @@
+# Request RHPDS
+
+. Order `OpenShift Workshop 4.8` on the https://rhpds.redhat.com/catalog/explorer[RHPDS catalog].
+. Confirm the warning, and apply the following settings based on your Team, and leave all other default settings.
+.. *Team 1:* 
+... Keep all defaults
+.. *Team 2:* 
+... Set the size to `Large`
+... Users to `15`
+.. *Team 3:*
+... RHOAM `::TODO::`
+. Select `Training` as the Purpose.
+. Submit - this can take about 30 minutes to finish, and you will get an email. 
+. If the provision fails, simply repeat the previous steps.
+
+# Create Project
+
+. Once provisioned, `ssh` to the bastion using the SSH password provided in the email.
+. sudo as `root` user:
+
+    # sudo -i
+
+. Create `3scale-amp` project.
+    
+    # oc new-project 3scale-amp
