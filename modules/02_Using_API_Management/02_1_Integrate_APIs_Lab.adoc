@@ -104,7 +104,7 @@ Multiple custom application plans can be defined for an API.
 In this section of the lab, you'll create two new Application Plans for the _Products_ API.
 
 . From the top panel, select *Product:Products API* and on the _Overview_ page scroll down to the *Published Application Plans* section.
-. Create a basic plan for the Products API :
+. Create a *basic plan* for the Products API :
 .. Click: *Create Application Plan*.
 .. Use the following parameters:
 * *Name*: `Products Basic Plan`
@@ -114,11 +114,15 @@ In this section of the lab, you'll create two new Application Plans for the _Pro
 +
 image::images/amp_admin_portal_products_api_basic_application_plan.png[]
 
-. Navigate back to the Product overview page, and create another application plan with the name `Products Premium Plan` and a system name of `products/premium`. +
-The `Products Premium Plan` is used in later labs in this course.
+. Navigate back to the Product overview page, and create another application plan with :
+. Create a *premium plan* for the Products API :
+.. Click: *Create Application Plan*
+.. User the following parameters:
+* *Name*: `Products Premium Plan`
+* *System Name*: `products/premium`
+* Click *Create Application Plan*
 
-* On the *Application Plans* overview page, select `Products Basic Plan` from the *Default Plan* drop-down.
-. Click *Publish* for both `Products Basic Plan` and `Products Premium Plan`:
+. On the *Application Plans* overview page, select `Products Basic Plan` from the *Default Plan* drop-down and *Publish* both `Products Basic Plan` and `Products Premium Plan` :
 +
 image::images/amp_admin_portal_products_api_publish_application_plan.png[]
 
