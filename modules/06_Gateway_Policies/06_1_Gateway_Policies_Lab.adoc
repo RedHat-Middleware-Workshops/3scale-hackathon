@@ -237,7 +237,7 @@ image::images/amp_admin_portal_traffic_hits_404.png[]
 == JWT Claim Check Policy
 
 In this section, you set up a policy to accept or deny a request based on the JWT token claim value.
-This is a standard policy plug-in available in 3scale API Management that can be configured directly in the service configuration. This policy is useful when the service is configured to use *OpenId Connect*
+This is a standard policy plug-in available in 3scale API Management that can be configured directly in the service configuration. This policy is useful when the service is configured to use *OpenId Connect* authentication.
 
 === Setup policy in 3scale admin portal
 . In a browser window, navigate to your tenant's 3scale Admin Portal.
@@ -254,8 +254,8 @@ This is a standard policy plug-in available in 3scale API Management that can be
 * *jwt_claim*: `role`
 * *value_type*: `Evaluate as plain text`
 * *value*: `admin`
-* *combine_op*: `admin`
-* *resource*: `admin`
+* *combine_op*: `and`
+* *resource*: `/time/now`
 * *Allowed methods*: `GET`
 * *Error message*: `Not authorized to use the operation`
 
@@ -265,7 +265,7 @@ image::images/amp_admin_portal_jwt_claim_policy2.png[]
 
 === Setup RH-SSO 
 
-When an application is created for a 3scale service, a client corresponding to it is created in RH-SSO. 
+When an application is created for a 3scale service, a client corresponding to it is created in RH-SSO by 3scale zync component. Create a mapper in RH-SSO admin console as suggested below.
 
 . Navigate to *Realm: threescale-realm -> Clients -> Client : (3scale application client)-> Mappers*. 
 . Click *Create* and create token mapper with these values
@@ -281,7 +281,7 @@ image::images/sso_client_mappers.png[]
 
 === Create users in SSO
 
-Create two users (normal,admin) in threescale_realm for testing the policy
+Create two users (normal,admin) in threescale_realm for testing the *JWT Claim Check* policy.
 
 . Navigate to *Realm: threescale-realm -> users*
 . Click *Add user* with these values
@@ -297,11 +297,12 @@ Create two users (normal,admin) in threescale_realm for testing the policy
 * *key*: `role`
 * *value*: `admin`
 
++
 image::images/create_admin_user.png[]
 image::images/set_admin_user_password.png[]
 image::images/set_admin_user_attributes.png[]
-
-. Click *Add user* with these values
++
+. Click *Add user* again to create *normal* user with these values
 * *Username*: `normal`
 * *Email*: `normal.sso@openshift.com`
 * *First Name*: `normal`
@@ -325,8 +326,13 @@ image::images/setup_postman_authorization_code.png[]
 
 . Click *Get New Access Token*
 . When prompted for user credentials, enter either *admin* OR *normal* user credentials as setup above
-* Admin user will return a response with http status code as 200
-* Admin user will return a response with http status code as 403. Response will be *Not authorized to use the operation*
+* Admin user will return a response with http status code as 200 since the claim *role* in the token generated for admin user has *admin* as value
++
+image::images/claim_value_admin_user.png[]
++
+* Normal user will return a response with http status code as 403 since the claim *role* in the token generated for normal user has *normal* as value. Response will be *Not authorized to use the operation*
 
 +
+image::images/claim_value_normal_user.png[]
 image::images/normal_user_postman_response.png[]
++
