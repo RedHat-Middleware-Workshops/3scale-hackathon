@@ -1,9 +1,0 @@
-apiVersion: apps.3scale.net/v1alpha1
-kind: APIManager
-metadata:
-  name: "3scale-amp"
-  namespace: "3scale-rwo"
-spec:
-  wildcardDomain: apps.cluster-0228.0228.sandbox1124.opentlc.com
-  resourceRequirementsEnabled: false
-  tenantName: 3scale-rwo

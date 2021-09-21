@@ -6,7 +6,7 @@
 
 == Goals of the lab
 
-* Create nooba storage class using OpenShift container storage operator
+* Create a Noobaa storage class using OpenShift container storage operator
 * Create object bucket claim required for 3scale
 * Install 3scale Operator
 * Install 3scale using APIManager CRD
@@ -23,7 +23,7 @@ image::images/rhpds_provision_steps.png[]
 
 It takes up to 75 minutes to provision a cluster in rhpds. You will receive an email with detailed instructions to access the cluster.
 
-== Create nooba storage class
+== Create Noobaa storage class
 
 === Install OpenShift Container Storage (OCS) Operator
 . Login to the OpenShift console using the details in the email received upon provisioning rhpds cluster
@@ -34,11 +34,11 @@ image::images/ocs_operator.png[]
 +
 . Upon successful installation of the ocs operator, it should create *openshift-storage* namespace. Go to the OCS operator just installed and create storage cluster as shown below
 +
-image::images/nooba_create_storagecluster.png[]
+image::images/noobaa_create_storagecluster.png[]
 +
 . Click *Create StorageCluster* and select the following values
 +
-image::images/nooba_create_storagecluster_capacity.png[]
+image::images/noobaa_create_storagecluster_capacity.png[]
 +
 
 In about 10 minutes storage class *openshift-storage.noobaa.io* will be available under Storage->Storageclasses
@@ -63,7 +63,7 @@ image::images/create_objectbucketclaim_details.png[]
 
 Upon creating the Object BucketClaim, it should show details something like below. Capture the values that will be used to create a secret `aws-auth` in the next step
 
-image::images/nooba_objectbucketclaim_details.png[]
+image::images/noobaa_objectbucketclaim_details.png[]
 
 === Create aws-auth secret
 
