@@ -336,3 +336,125 @@ image::images/claim_value_admin_user.png[]
 image::images/claim_value_normal_user.png[]
 image::images/normal_user_postman_response.png[]
 +
+
+
+== RH-SSO/Keycloak Role Check Policy
+
+In this section, you set up a policy to accept or deny a request based on the RH-SSO realm/client role assigned to the user.
+This is a standard policy plug-in available in 3scale API Management that can be configured directly in the service configuration. This policy is useful when the service is configured to use *OpenId Connect* authentication.
+
+=== Setup policy in 3scale admin portal
+. In a browser window, navigate to your tenant's 3scale Admin Portal.
+. Navigate to *Product: Products API -> Integration -> Policies*.
+. Click *Add Policy*.
+. From the list of policies, select *RH-SSO/Keycloak Role Check*.
+. Click the positioning arrows on the right to move the _RH-SSO/Keycloak Role Check_ policy on top of the *3scale APIcast* policy.
+. Click *RH-SSO/Keycloak Role Check* to expand the policy.
+. In the policy configuration page, enter the following values:
+* Make sure the policy is enabled.
+* *type*: `whitelist`
+* *resource_type*: `Evaluate 'value' as plain text`
+* *Allowed methods*: `ANY`
+* *resource*: `/time/now`
++
+*_Client and/or realm roles can be configured_*
++
+* *Realm Role(s)*
+** *name_type*: `Evaluate 'value' as plain text`
+** *name*: `admin_realm_role`
+* *Client Role(s)*
+** *client_type*: `Evaluate 'value' as plain text`
+** *name*: `admin_client_role` 
+** *name_type*: `Evaluate 'value' as plain text`
+** *client*: `Client Id where role is created`
++
+image::images/amp_admin_portal_sso_realm_role_check_policy1.png[]
+image::images/amp_admin_portal_sso_realm_role_check_policy2.png[]
+image::images/amp_admin_portal_sso_client_role_check_policy.png[]
++
+
+
+=== Setup RH-SSO 
+
+In RH-SSO, roles can be created at realm and/or client scopes. Roles created at a realm scope can be assigned to the clients and/or users in that realm. Roles created at a client scope can be assigned to the users only.
+
+. Navigate to *Realm: threescale-realm -> Roles*
+. Click *Add Role* and create a role with these values
+* *Role Name*: `admin_realm_role`
+* *Description*: `Admin Role at Realm scope`
+* *Composite Roles*: `OFF`
+. Click *Save*
+
++
+image::images/create_sso_realm_role.png[]
+
+When an application is created for a 3scale service, a client corresponding to it is created in RH-SSO by 3scale zync component. Create a role in RH-SSO admin console with these values.
+
+. Navigate to *Realm: threescale-realm -> Clients -> Select the client created by 3scale zync*
+. Click *Roles* tab and then click *Add Role*. Create a role with these values
+* *Role Name*: `admin_client_role`
+* *Description*: `Admin Role at Client scope`
+* *Composite Roles*: `OFF`
+. Click *Save*
+
++
+image::images/create_sso_client_role.png[]
+
+=== Create users in SSO
+
+Create two users (normal,admin) in threescale_realm for testing the *RH-SSO/Keycloak Role Check* policy.
+
+. Navigate to *Realm: threescale-realm -> users*
+. Click *Add user* with these values
+* *Username*: `admin`
+* *Email*: `admin.sso@openshift.com`
+* *First Name*: `admin`
+* *First Name*: `sso`
+* *User Enabled*: `ON`
+* *Email Verified*: `ON`
+. Click *Save*
+. Click *Credentials* tab, set the password and save
+. Click *Role Mappings* tab. Select the *admin_realm_role* in *Available Roles* and click *Add selected*
+. Click *Client Roles* tab. Enter the *client id* and select the *client* that shows up. Select the *admin_client_role* in *Available Roles* and click *Add selected*
+
++
+image::images/create_admin_user.png[]
+image::images/set_admin_user_password.png[]
+image::images/assign_realm_role.png[]
+image::images/assign_client_role.png[]
++
+
+. Click *Add user* again to create *normal* user with these values
+* *Username*: `normal`
+* *Email*: `normal.sso@openshift.com`
+* *First Name*: `normal`
+* *First Name*: `sso`
+* *User Enabled*: `ON`
+* *Email Verified*: `ON`
+. Click *Save*
+. Click *Credentials* tab, set the password and save
+. DO NOT assign a realm and/or client role to the user
+
+
+=== Test the policy
+
+Set up postman where OpenID connect token is obtained using *Autorization code* grant.
+
+image::images/setup_postman_authorization_code.png[]
+
+. Click *Get New Access Token*
+. When prompted for user credentials, enter either *admin* OR *normal* user credentials as setup above
+* Admin user will return a response with http status code as 200 since the token generated for admin user has both  realm and client roles required.
++
+image::images/admin_user_token_with_realm_client_roles.png[]
++
+* Normal user will return a response with http status code as 403 since no role is assigned.
++
+image::images/realm_role_normal_user_token.png[]
+image::images/normal_user_realm_role_postman_response.png[]
++
+* Modify *admin* user and unassign either client or realm role in RH-SSO. Now, for the same user it will return a response with http status code as 403 since the sso role check policy is checking for the existence of both realm and client roles.
++
+image::images/without_client_role_token.png[]
+image::images/without_client_role_postman_response.png[]
++
