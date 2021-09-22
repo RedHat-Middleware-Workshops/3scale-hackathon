@@ -249,7 +249,7 @@ image::images/dev_portal_cms_partial_single_signup.png[]
 ----
 
 . Save the file.
-. Publish both of the changes:
+. Publish both changes by clicking Drafts in the left-hand panel, then Publish All:
 +
 image::images/dev_portal_cms_drafts_3.png[]
 
