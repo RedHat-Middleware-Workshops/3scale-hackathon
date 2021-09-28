@@ -20,8 +20,20 @@ The following document walks through the various options to Provision an OpenShi
 
 == Notes 
 
-.Issue: Incorrect reporting of install completion
+=== Incorrect reporting of install completion
 If you select to install RHOAM using your own AWS Account, when you provision your OpenShift Dedicated cluster through cloud.redhat.com and install the RHOAM Add-On there is a known issue where the installation reports that it has completed as soon as 10 minutes after starting.  However, it can take up to 45 minutes for all resources to be installed. You will know provioning is complete when the drop-down in Openshift cluster management console contains all 3 of the the API Management components shown in the screenshot below.   
 
 image::images/RHOAM-install-complete.png[]
 
+
+=== Access to the RHOAM 3SCale management namespace is limited 
+The following roles in Openshift Dedicated apply to RHOAM.
+
+* cluster-admin role - This user role has the maximum administrator privileges with mostly unrestricted access to control and configure the cluster.
+* dedicated-admin role - This user role give increased visibility and management capabilities over objects across projects. 
+
+See section in the Openshift Dedicated documentation.  
+
+* link:https://access.redhat.com/documentation/en-us/openshift_dedicated/4/html/administering_your_cluster/osd-admin-roles#understanding-admin-roles_osd-admin-roles[Understanding administration roles]
+
+These roles apply for RHOAM.  Generally, customers are not granted unrestrictive access  to the "Red Hat"-managed 3Scale/RHOAM namespace. If you (or a customer) needs to make changes to this namespace an Openshift dedicated cluster, a support case should be created in the Red Hat Customer Portal.
