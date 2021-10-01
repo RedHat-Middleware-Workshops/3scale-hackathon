@@ -127,7 +127,4 @@ This Team will be using RWO storage.
 ## Next Steps
 `TODO:` In the next section, we will explore creating the tenants using operator.
 
-## Ansible
-`TODO:` Use an ansible role to deploy `3scale-operator` and manage installation of AMP and tenants.
-
 8500
