@@ -49,8 +49,6 @@ Primarily, this is due to following issues:
 2. Choose `threescale-2.10`
 
 ### 4. Storage
-This Team will be using RWO storage.
-
 1. Install the OpenShift Container Storage operator to the `openshift-storage` namespace.
 2. Select update channel `stable-4.8`
 
@@ -123,5 +121,3 @@ This Team will be using RWO storage.
 19. Wait for 10 mins for all the 3scale pods to be ready.
 20. Login to the Master URL and the `3scale-admin` tenant.
 21. Verify that you can open the Developer Portal and the Content is loaded correctly.
-
-8500
