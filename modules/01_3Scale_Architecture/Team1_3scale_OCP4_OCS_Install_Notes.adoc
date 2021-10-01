@@ -124,7 +124,4 @@ This Team will be using RWO storage.
 20. Login to the Master URL and the `3scale-admin` tenant.
 21. Verify that you can open the Developer Portal and the Content is loaded correctly.
 
-## Next Steps
-`TODO:` In the next section, we will explore creating the tenants using operator.
-
 8500
