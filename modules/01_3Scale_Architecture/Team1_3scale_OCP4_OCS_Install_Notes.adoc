@@ -71,28 +71,6 @@ This Team will be using RWO storage.
     NAME                              CREATED AT
     3scale-amp-core-resource-limits   2019-12-17T15:33:34Z
     
-10. Edit the resource limit `3scale-amp-core-resource-limits` to change the resource limits as follows. The limit for memory as changed here to 32 GB to ensure the `redis-* pod`s of 3scale are deployed. This is only the max limit and does not affect the requested resources.
-    
-    # oc edit limitranges
-    
-    [...]
-    spec:
-      limits:
-      - default:
-          cpu: 500m
-          memory: 1536Mi
-        defaultRequest:
-          cpu: 50m
-          memory: 256Mi
-        max:
-          cpu: "3"
-          memory: 32Gi
-        type: Container
-      - max:
-          cpu: "2"
-          memory: 32Gi
-        type: Pod
-
 14. Create the `smtp.yml` configmap to configure SMTP access:
 
     # vim smtp.yml
