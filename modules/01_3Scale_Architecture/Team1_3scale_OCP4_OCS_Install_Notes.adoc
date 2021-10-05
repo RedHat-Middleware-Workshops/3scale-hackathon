@@ -62,14 +62,8 @@ Primarily, this is due to following issues:
 4. All other settings can keep their defaults. Hit Create. If you see a `404` message, reload your browser.
 5. Change the default storage class
 
-### 6. Create APIManager resource
-1. Find the resource limits for this project:
-
-    # oc get limitranges
-    NAME                              CREATED AT
-    3scale-amp-core-resource-limits   2019-12-17T15:33:34Z
-    
-14. Create the `smtp.yml` configmap to configure SMTP access:
+### 6. Create APIManager resource    
+1. Create the `smtp.yml` configmap to configure SMTP access:
 
     # vim smtp.yml
     
@@ -90,11 +84,11 @@ Primarily, this is due to following issues:
       port: '587'
       username: '<< your userid>>'
 
-15. Add the configmap to `3scale-amp` namespace:
+2. Add the configmap to `3scale-amp` namespace:
 
     # oc create -f smtp.yml
     
-16. Once Operator is installed and ready, get back to the terminal and add the APIManager:
+3. Once Operator is installed and ready, get back to the terminal and add the APIManager:
 
     # vim amp-s3.yml
     
@@ -118,6 +112,6 @@ Primarily, this is due to following issues:
   
     # oc create -f amp-s3.yml
 
-19. Wait for 10 mins for all the 3scale pods to be ready.
-20. Login to the Master URL and the `3scale-admin` tenant.
-21. Verify that you can open the Developer Portal and the Content is loaded correctly.
+4. Wait for 10 mins for all the 3scale pods to be ready.
+5. Login to the Master URL and the `3scale-admin` tenant.
+6. Verify that you can open the Developer Portal and the Content is loaded correctly.
