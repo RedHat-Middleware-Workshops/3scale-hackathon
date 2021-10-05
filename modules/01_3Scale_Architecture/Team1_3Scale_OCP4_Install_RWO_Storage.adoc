@@ -14,34 +14,6 @@ Fast 3Scale set-up using RWO storage, ideal for quick demos.
 
   # oc new-project 3scale-amp
 
-5. Find the resource limits for this project:
-
-  # oc get limitranges
-  NAME                              CREATED AT
-  3scale-amp-core-resource-limits   2019-12-17T15:33:34Z
-
-6. Edit the resource limit `3scale-amp-core-resource-limits` to change the resource limits as follows. The limit for memory as changed here to `32 GB` to ensure the `redis-*` pods of 3scale are deployed. This is only the max limit and does not affect the requested resources.
-
-  # oc edit limitranges
-  
-  [...]
-  spec:
-    limits:
-    - default:
-        cpu: 500m
-        memory: 1536Mi
-      defaultRequest:
-        cpu: 50m
-        memory: 256Mi
-      max:
-        cpu: "3"
-        memory: 32Gi
-      type: Container
-    - max:
-        cpu: "3"
-        memory: 32Gi
-      type: Pod
-
 7. Create `system-storage` PVC using this YAML in the `3scale-amp` namespace.
 
   # vim system-storage-pvc.yaml
