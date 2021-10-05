@@ -14,7 +14,7 @@ Fast 3Scale set-up using RWO storage, ideal for quick demos.
 
   # oc new-project 3scale-amp
 
-7. Create `system-storage` PVC using this YAML in the `3scale-amp` namespace.
+5. Create `system-storage` PVC using this YAML in the `3scale-amp` namespace.
 
   # vim system-storage-pvc.yaml
 
@@ -39,9 +39,9 @@ Fast 3Scale set-up using RWO storage, ideal for quick demos.
    # oc create -f system-storage-pvc.yaml 
    persistentvolumeclaim/system-storage created
     
-8. In the UI, install the `3scale API Management` Community operator with the `threescale-2.10` channel to the `3scale-amp` namespace via Operator Hub. 
+6. In the UI, install the `3scale API Management` Community operator with the `threescale-2.10` channel to the `3scale-amp` namespace via Operator Hub. 
 
-9. Once this is successful, create the API Manager `amp.yaml`. Make sure all the operator pods are up before creating an API Manager instance. 
+7. Once this is successful, create the API Manager `amp.yaml`. Make sure all the operator pods are up before creating an API Manager instance. 
    Be sure to update the `wildcardDomain`. Example: `apps.cluster-5ffxf.5ffxf.sandbox1868.opentlc.com`
 
   # vim amp.yaml
@@ -67,7 +67,7 @@ Fast 3Scale set-up using RWO storage, ideal for quick demos.
     # oc create -f amp.yaml
     apimanager.apps.3scale.net/apimanager created
 
-10. Create the API Manager specification `amp-s3.yml`. Be sure to update the `wildcardDomain`.
+8. Create the API Manager specification `amp-s3.yml`. Be sure to update the `wildcardDomain`.
 
   apiVersion: apps.3scale.net/v1alpha1
   kind: APIManager
@@ -81,7 +81,7 @@ Fast 3Scale set-up using RWO storage, ideal for quick demos.
   # oc create -f amp-s3.yaml
   apimanager.apps.3scale.net/3scale-amp created
 
-11. After few minutes your API Manager Pods will be up and you should be able to access the `3scale-admin` URL.
+9. After few minutes your API Manager Pods will be up and you should be able to access the `3scale-admin` URL.
 
   # oc get pods 
   NAME                                  READY   STATUS      RESTARTS   AGE
