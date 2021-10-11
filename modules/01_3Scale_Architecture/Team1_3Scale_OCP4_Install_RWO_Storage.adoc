@@ -1,0 +1,167 @@
+# Installing 3Scale in OCP 4.8 with RWO Storage
+
+Fast 3Scale set-up using RWO storage, ideal for quick demos.
+
+## OCP Environment
+
+1. Start with the OCP 4.8 workshop deployer on `RHPDS`.
+2. `ssh` to the bastion using the SSH password provided in the email.
+3. `sudo` as `root` user:
+  
+  # sudo -i
+  
+4. Create `3scale-amp` project.
+
+  # oc new-project 3scale-amp
+
+5. Create `system-storage` PVC using this YAML in the `3scale-amp` namespace.
+
+  # vim system-storage-pvc.yaml
+
+  apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    # This name uniquely identifies the PVC. Will be used in deployment below.
+    name: system-storage
+    namespace: 3scale-amp
+    labels:
+      app: 3scale-api-management
+      threescale_component: system
+  spec:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+    storageClassName: gp2
+    volumeMode: Filesystem
+
+   # oc create -f system-storage-pvc.yaml 
+   persistentvolumeclaim/system-storage created
+    
+6. In the UI, install the `3scale API Management` Community operator with the `threescale-2.10` channel to the `3scale-amp` namespace via Operator Hub. 
+
+7. Once this is successful, create the API Manager `amp.yaml`. Make sure all the operator pods are up before creating an API Manager instance. 
+   Be sure to update the `wildcardDomain`. Example: `apps.cluster-5ffxf.5ffxf.sandbox1868.opentlc.com`
+
+  # vim amp.yaml
+  
+  apiVersion: apps.3scale.net/v1alpha1
+  kind: APIManager
+  metadata:
+    name: apimanager
+  spec:
+    system:
+      fileStorage:
+        persistentVolumeClaim:
+          storageClassName: gp2
+      redisResources:
+        limits:
+          memory: 6Gi
+    backend:
+      redisResources:
+        limits:
+          memory: 6Gi
+    wildcardDomain: "{{ route_subdomain }}" 
+    
+    # oc create -f amp.yaml
+    apimanager.apps.3scale.net/apimanager created
+
+8. Create the API Manager specification `amp-s3.yml`. Be sure to update the `wildcardDomain`.
+
+  apiVersion: apps.3scale.net/v1alpha1
+  kind: APIManager
+  metadata:
+    name: "3scale-amp"
+    namespace: "3scale-amp"
+  spec:
+    wildcardDomain: "{{ route_subdomain }}"
+    resourceRequirementsEnabled: false
+    
+  # oc create -f amp-s3.yaml
+  apimanager.apps.3scale.net/3scale-amp created
+
+9. After few minutes your API Manager Pods will be up and you should be able to access the `3scale-admin` URL.
+
+  # oc get pods 
+  NAME                                  READY   STATUS      RESTARTS   AGE
+  pod/3scale-operator-c6d495784-9299n   1/1     Running     0          112m
+  pod/apicast-production-1-deploy       0/1     Completed   0          15m
+  pod/apicast-production-1-xfbtp        1/1     Running     0          15m
+  pod/apicast-staging-1-deploy          0/1     Completed   0          15m
+  pod/apicast-staging-1-nrjvq           1/1     Running     0          15m
+  pod/backend-cron-1-deploy             0/1     Completed   0          15m
+  pod/backend-cron-1-tf5z4              1/1     Running     0          15m
+  pod/backend-listener-1-deploy         0/1     Completed   0          15m
+  pod/backend-listener-1-p6mzv          1/1     Running     0          15m
+  pod/backend-redis-1-deploy            0/1     Completed   0          15m
+  pod/backend-redis-1-k254h             1/1     Running     0          15m
+  pod/backend-worker-1-deploy           0/1     Completed   0          15m
+  pod/backend-worker-1-nbf45            1/1     Running     0          15m
+  pod/system-app-1-deploy               0/1     Completed   0          15m
+  pod/system-app-1-hook-post            0/1     Completed   0          8m22s
+  pod/system-app-1-hook-pre             0/1     Completed   0          15m
+  pod/system-app-1-jvf79                3/3     Running     0          9m52s
+  pod/system-memcache-1-4w5jp           1/1     Running     0          15m
+  pod/system-memcache-1-deploy          0/1     Completed   0          15m
+  pod/system-mysql-1-deploy             0/1     Completed   0          15m
+  pod/system-mysql-1-prkl8              1/1     Running     0          15m
+  pod/system-redis-1-deploy             0/1     Completed   0          15m
+  pod/system-redis-1-hkpzd              1/1     Running     0          15m
+  pod/system-sidekiq-1-deploy           0/1     Completed   0          15m
+  pod/system-sidekiq-1-gjdvx            1/1     Running     0          15m
+  pod/system-sphinx-1-deploy            0/1     Completed   0          15m
+  pod/system-sphinx-1-mpjxj             1/1     Running     0          15m
+  pod/zync-1-deploy                     0/1     Completed   0          15m
+  pod/zync-1-v8zbm                      1/1     Running     0          15m
+  pod/zync-database-1-deploy            0/1     Completed   0          15m
+  pod/zync-database-1-dz2vg             1/1     Running     0          15m
+  pod/zync-que-1-deploy                 0/1     Completed   0          15m
+  pod/zync-que-1-q9sdr                  1/1     Running     1          15m
+
+## Logging In to the API Manager Console
+
+1. To find the login credentials, locate the 'system-seed` secret in the UI under `Workloads > Secrets > system-seed`. Ensure you are in the `3scale-amp` namespace.
+2. Select `Reveal Values` to locate `ADMIN_PASSWORD` and `ADMIN_USER`.
+3. Navigate to `Networking > Routes` and locate the `3scale-admin` location URL. Alternatively, use the CLI:
+  
+  # oc get routes | grep 3scale-admin
+  zync-3scale-provider-5rv76   3scale-admin.apps.cluster-17b4.17b4.sandbox1456.opentlc.com    system-provider   http    edge/Redirect   None
+
+4. Navigate to the route URL and login using the credentials from step 2.
+
+# Optional:
+
+### SMTP Access
+
+1. Create the `smtp.yml` configmap to configure SMTP access:
+
+  kind: ConfigMap
+  apiVersion: v1
+  metadata:
+    name: smtp
+    labels:
+      app: 3scale-api-management
+      threescale_component: system
+      threescale_component_element: smtp
+  data:
+    address: 'smtp.gmail.com'
+    authentication: 'login'
+    domain: 'redhat.com'
+    openssl.verify.mode: 'false'
+    password: '<< your password>>'
+    port: '587'
+    username: '<< your userid>>'
+
+2. Add the configmap to `3scale-amp` namespace:
+
+  # oc create -f smtp.yml
+
+3. Once SMTP is updated, redeploy the system pods.
+
+# Next Steps
+
+In the next section, we will explore 3Scale capabilities
+
+- Create Tenant using CR
+- Create Product/Backend/Application Plan/Metrics (https://access.redhat.com/documentation/en-us/red_hat_3scale_api_management/2.10/html/operating_3scale/provision-threescale-services-via-operator)
