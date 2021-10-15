@@ -1,0 +1,48 @@
+Here are some items our team struggled with during the 3Scale Hackathon.  We'd hoped to get 
+to write-up some of this as useful additions to the labs but other priorities got in the way. 
+Note: We felt current labs are well written and the focus is about right. These items may well be out of
+scope for the main path of the lab. Just here to document our journey during Hackathon.
+Hopfully this feedback will provide useful information on some things to emphasize or enhance in 
+future versions of these labs. 
+
+1) Regarding Developer portal chapters 03 how would we enable scenario where 
+    we use RH-SSO and want to create an API Consumer sign-up flow that give developer's
+    ability to self-serve with automatic account creation on signup?  
+    This sign-up flow would utilize RH-SSO for sign-up process. This was not addressed in the labs. 
+    Per Satya: "what happens is once you have configured RHSSO or any other IdP identities should be primarily 
+    managed there. 3scale should delegate the workflow to the IdP. So customers who implement a signup process 
+    with 3scale Dev Portal will create a workflow that will redirect the signup to the IdP's signup page."
+    As a lab exercise we could enable self creation of account into SSO (from the 3Scale Dev Portal "Sign Up" page) 
+    by following the RH SSO documentation for user registration 
+    https://access.redhat.com/documentation/en-us/red_hat_single_sign-on/7.4/html/server_administration_guide/user_management#user-registration
+
+
+2) When using RHOAM, our team wished to create an APICast instance inside our own namespace, but we fumbled with that procedure. 
+    The technique for deploying a tenant-specific API cast was not spelled out explicitely for a RHOAM install 
+    https://github.com/RedHat-Middleware-Workshops/3scale-hackathon/blob/master/modules/01_3Scale_Architecture/01_1_Lab_Environment_Lab.adoc#42-explore-tenant-specific-api-gateways
+    This process intalled installing apicast into custom namespsace and configuring secret, and pointing apicast back to the default 3scale manager. 
+
+
+3) There was some confusion regarding prometheous/grafana support in RHOAM for 3Scale. It was unclear what we should expect to see. 
+        We weren't seeing much metrics. The Consensus on our team was that by default 3Scale RHOAM should allow visibility in grafana to some meaningful 
+        metrics at least metrics for the default gateways apicasts.
+        Alerts on Openshift console 3Scale 
+        APIcast integration with Prometheus is not available in hosted API manager and hosted APIcast.
+            https://access.redhat.com/documentation/en-us/red_hat_3scale_api_management/2.10/html/administering_the_api_gateway/prometheus-3scale-apicast#prometheus-overview-3scale
+        But i did find this which did allow me to access
+        https://github.com/evanshortiss/rhoam-introductory-labs/blob/master/walkthroughs/lab-6-3scale-and-cluster-monitoring/walkthrough.adoc
+        and
+        https://github.com/evanshortiss/rhoam-introductory-labs/blob/master/walkthroughs/lab-3-rate-limit-monitoring/walkthrough.adoc
+
+
+4) Camel proxy Policy 
+    This would make a useful addition to 06 Gateway Policies lab . 
+    We were only able to connect to camel proxy from APICast over http not https 
+    had to change the camel proxy here:
+    https://github.com/zregvart/camel-netty-proxy
+    to instead listen on HTTP instead of https 
+    And configure the http_proxy to 
+    http://camel-netty-proxy.team3-business-services.svc:8080 
+    APIcast to communicate with Camel Proxy, SSL cert needs to be added to system part of APICast?? not sure 
+    Turned up logging on APICast to DEBUG helped troubleshoot problem
+
